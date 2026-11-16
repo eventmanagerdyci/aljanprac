@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="#c8662d" name="theme-color"/>
+<title>Administrator Dashboard | Barangay Document Services</title>
+
+<style>
+        /* COLOR SETTINGS
+           These colors are used throughout the dashboard to maintain
+           the orange, beige, and cream design of the system. */
+
+        :root {
+            --orange: #c8662d;
+            --orange-dark: #a74b1d;
+            --beige: #e9d1b3;
+            --cream: #fff9f0;
+            --ink: #342b26;
+            --muted: #81776f;
+            --line: #eee2d5;
+        }
+
+        /* GENERAL PAGE DESIGN
+           This group controls the basic appearance of the page,
+           including the font, background, text color, and button behavior. */
+
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: var(--cream); color: var(--ink); }
+        button, input { font: inherit; }
+        button { cursor: pointer; }
+        a { text-decoration: none; }
+        [hidden] { display: none !important; }
+
+        /* SIDEBAR DESIGN
+           This group creates the navigation panel on the left side.
+           It contains the system name, menu links, and Sign Out button. */
+
+        .sidebar {
+            position: fixed;
+            inset: 0 auto 0 0;
+            width: 250px;
+            background: var(--orange-dark);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            border-right: 3px solid var(--beige);
+            z-index: 30;
+        }
+        .brand { display: flex; align-items: center; gap: 12px; min-height: 88px; padding: 18px; border-bottom: 1px solid #ffffff30; }
+        .brand-icon { width: 45px; height: 45px; flex: none; display: grid; place-items: center; background: #ffffff20; border: 1px solid #ffffff35; border-radius: 10px; font-size: 23px; }
+        .brand strong { display: block; font-size: 15px; }
+        .brand small { display: block; color: #f6d8c3; font-size: 10px; margin-top: 5px; }
+        .menu-heading { padding: 24px 20px 10px; font-size: 11px; letter-spacing: 1px; color: #f2caa6; }
+        .menu { padding: 0 12px; }
+        .menu a { display: block; padding: 13px 15px; margin-bottom: 6px; border-radius: 7px; color: #fff0e7; font-size: 13px; }
+        .menu a:hover { background: #ffffff18; }
+        .menu a.active { background: #fff; color: var(--orange-dark); font-weight: bold; border-left: 4px solid var(--beige); }
+        .sidebar-bottom { margin-top: auto; padding: 16px 12px; border-top: 1px solid #ffffff30; }
+        .signout { width: 100%; padding: 12px; border: 1px solid #ffffff50; background: #ffffff17; border-radius: 7px; color: #fff; }
+        .signout:hover { background: #ffffff2c; }
+
+        /* MAIN CONTENT AND HEADER
+           This group positions the main dashboard beside the sidebar.
+           It also styles the top header where the administrator can see
+           the dashboard title and their account name. */
+
+        .main { margin-left: 250px; min-height: 100vh; }
+        .topbar { min-height: 76px; padding: 18px 30px; display: flex; align-items: center; justify-content: space-between; gap: 15px; background: var(--orange); border-bottom: 3px solid var(--beige); color: #fff; }
+        .topbar h1 { margin: 0 0 5px; font-size: 21px; }
+        .topbar p { margin: 0; font-size: 12px; color: #fff0e4; }
+        .user-chip { font-size: 12px; font-weight: bold; text-align: right; }
+        .content { max-width: 1220px; margin: auto; padding: 30px; }
+
+        /* WELCOME MESSAGE AND CLOCK
+           This group styles the welcome message and the date and time
+           displayed on the administrator dashboard. */
+
+        .welcome { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-bottom: 24px; }
+        .welcome h2 { margin: 0 0 8px; font-size: 23px; }
+        .welcome p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.6; }
+        .clock { background: #fff; border: 1px solid var(--line); padding: 13px 17px; border-radius: 9px; font-size: 12px; color: var(--orange-dark); text-align: right; line-height: 1.7; }
+
+        /* REQUEST SUMMARY CARDS
+           These styles are for the four summary cards:
+           Total Requests, Under Review, Processing, and Ready for Pickup.
+           Each card displays the number of requests in that category. */
+
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 17px; margin-bottom: 23px; }
+        .stat { background: var(--orange); color: #fff; border-top: 3px solid var(--beige); border-radius: 9px; padding: 22px; }
+        .stat small { font-size: 12px; color: #ffe8d8; }
+        .stat strong { display: block; font-size: 30px; margin-top: 10px; }
+
+        /* DASHBOARD PANELS
+           This group arranges the Latest Document Requests and Quick Actions
+           sections side by side on the administrator dashboard. */
+
+        .dashboard-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); gap: 18px; }
+        .panel { background: #fff; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+        .panel-head { background: var(--orange); color: #fff; border-bottom: 3px solid var(--beige); padding: 18px 21px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .panel-head h3 { font-size: 16px; margin: 0; }
+        .panel-head a { color: #fff4e8; font-size: 12px; text-decoration: underline; }
+
+        /* LATEST REQUEST LIST
+           These styles control how each recent document request appears.
+           The resident name, request date, status, and Manage button
+           are arranged neatly in each request row. */
+
+        .request-list { padding: 4px 20px; }
+        .request-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 17px 0; border-bottom: 1px solid var(--line); }
+        .request-row:last-child { border-bottom: 0; }
+        .request-row strong { display: block; font-size: 13px; margin-bottom: 6px; }
+        .request-row p { margin: 4px 0; color: var(--muted); font-size: 11px; line-height: 1.5; overflow-wrap: anywhere; }
+        .request-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+        .status { background: #fff1e1; color: var(--orange-dark); padding: 5px 9px; border-radius: 20px; font-size: 10px; font-weight: bold; text-align: center; }
+        .btn { background: var(--orange); color: #fff; border: 0; border-radius: 6px; padding: 10px 15px; font-size: 12px; font-weight: bold; }
+        .btn:hover { background: var(--orange-dark); }
+
+        /* QUICK ACTIONS
+           These styles create the clickable shortcuts on the right side.
+           The administrator can use them to open other pages of the system. */
+
+        .actions { padding: 18px; }
+        .action { display: block; width: 100%; text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 7px; padding: 15px; margin-bottom: 11px; color: var(--ink); font-size: 13px; }
+        .action:hover { background: var(--cream); border-color: var(--beige); }
+        .action small { display: block; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+
+        /* EMPTY STATE AND NOTIFICATION MESSAGES
+           These styles are used when there are no requests to display
+           or when the system needs to show a loading or error message. */
+
+        .empty { padding: 35px 20px; text-align: center; color: var(--muted); font-size: 13px; line-height: 1.7; }
+        .notice { padding: 13px 16px; background: #fff; border: 1px solid var(--line); border-left: 4px solid var(--orange); border-radius: 7px; color: var(--muted); font-size: 12px; margin-bottom: 20px; line-height: 1.6; }
+        .notice.error { color: #9f3229; border-left-color: #c44d40; }
+
+        /* REQUEST DETAILS POP-UP
+           This group styles the pop-up window that appears when the
+           administrator clicks Manage on a recent document request.
+           It displays the request information without leaving the dashboard. */
+
+        .overlay { position: fixed; inset: 0; background: #2b1b1599; display: grid; place-items: center; padding: 18px; z-index: 60; }
+        .modal { width: min(650px, 100%); max-height: 90vh; overflow-y: auto; background: #fff; border-radius: 10px; }
+        .modal-head { background: var(--orange); border-bottom: 3px solid var(--beige); color: #fff; padding: 18px 22px; display: flex; justify-content: space-between; gap: 15px; align-items: center; }
+        .modal-head h3 { margin: 0; font-size: 17px; }
+        .close { background: #ffffff26; color: #fff; border: 0; border-radius: 6px; padding: 7px 12px; }
+        .modal-body { padding: 22px; }
+        .detail { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 12px; border-bottom: 1px solid var(--line); padding: 12px 0; font-size: 12px; overflow-wrap: anywhere; }
+        .detail strong { color: #756458; }
+        .modal-foot { padding: 15px 22px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+        /* RESPONSIVE DESIGN
+           This group adjusts the dashboard when viewed on smaller screens.
+           The summary cards and dashboard panels rearrange to fit the screen,
+           while the sidebar becomes narrower on mobile devices. */
+
+        @media (max-width: 1050px) { .stats { grid-template-columns: repeat(2, 1fr); } .dashboard-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 700px) {
+            .sidebar { width: 88px; }
+            .brand { justify-content: center; padding: 10px 4px; }
+            .brand-icon { width: 45px; }
+            .brand-text, .menu-heading { display: none; }
+            .menu { padding: 14px 5px; }
+            .menu a { text-align: center; padding: 12px 3px; font-size: 10px; overflow-wrap: anywhere; }
+            .main { margin-left: 88px; }
+            .topbar { padding: 14px; }
+            .topbar h1 { font-size: 17px; }
+            .topbar p, .user-chip { display: none; }
+            .content { padding: 18px 12px; }
+            .welcome { flex-direction: column; align-items: stretch; }
+            .clock { text-align: left; }
+            .stats { gap: 9px; }
+            .stat { padding: 14px 10px; }
+            .stat strong { font-size: 24px; }
+            .request-list { padding: 3px 12px; }
+            .request-row { grid-template-columns: 1fr; }
+            .request-actions { flex-direction: row; justify-content: space-between; align-items: center; }
+            .detail { grid-template-columns: 1fr; gap: 3px; }
+        }
+
+        /* SHARED SIDEBAR DESIGN
+           This group keeps the administrator sidebar consistent
+           with the sidebar design used on the other portal pages. */
+
+        .sidebar {
+            position: fixed !important;
+            inset: 0 auto 0 0 !important;
+            width: 250px !important;
+            height: 100vh !important;
+            min-height: 0 !important;
+            padding: 0 !important;
+            gap: 0 !important;
+            background: #a74b1d !important;
+            color: #ffffff !important;
+            border: 0 !important;
+            border-right: 3px solid #e9d1b3 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            z-index: 30 !important;
+            border-radius: 0 !important;
+            overflow-y: auto;
+        }
+        .sidebar .brand {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            min-height: 90px !important;
+            padding: 18px !important;
+            margin: 0 !important;
+            border: 0 !important;
+            border-bottom: 1px solid #ffffff30 !important;
+            color: #ffffff !important;
+            background: transparent !important;
+            border-radius: 0 !important;
+            flex-shrink: 0;
+        }
+        .sidebar .brand-mark {
+            width: 47px !important;
+            height: 47px !important;
+            flex-shrink: 0;
+            border: 2px dashed #f4d5b5 !important;
+            border-radius: 9px !important;
+            background: transparent !important;
+            display: grid !important;
+            place-items: center !important;
+            font-size: 11px !important;
+            color: #ffffff !important;
+        }
+        .sidebar .brand-copy h2 {
+            margin: 0 0 5px !important;
+            font-size: 15px !important;
+            color: #ffffff !important;
+            font-weight: 700 !important;
+        }
+        .sidebar .brand-copy p {
+            margin: 0 !important;
+            color: #f7d8c3 !important;
+            font-size: 10px !important;
+            line-height: 1.5 !important;
+        }
+        .sidebar .menu-title {
+            color: #f5d5b1 !important;
+            font-size: 11px !important;
+            font-weight: bold !important;
+            letter-spacing: 1px !important;
+            padding: 27px 20px 12px !important;
+            margin: 0 !important;
+            background: transparent !important;
+        }
+        .sidebar .menu {
+            display: block !important;
+            padding: 0 12px !important;
+            margin: 0 !important;
+            background: transparent !important;
+            border: 0 !important;
+        }
+        .sidebar .menu a {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            min-height: 45px !important;
+            padding: 12px 14px !important;
+            margin: 0 0 5px !important;
+            color: #fff4e9 !important;
+            text-decoration: none !important;
+            border: 0 !important;
+            border-radius: 7px !important;
+            font-size: 13px !important;
+            font-weight: 400 !important;
+            line-height: 1.4 !important;
+            background: transparent !important;
+            text-align: left !important;
+        }
+        .sidebar .menu a:hover {
+            background: #ffffff1b !important;
+        }
+        .sidebar .menu a.active {
+            background: #ffffff !important;
+            color: #a74b1d !important;
+            font-weight: bold !important;
+            border-left: 4px solid #e9d1b3 !important;
+            padding-left: 10px !important;
+        }
+        .sidebar .menu-icon {
+            display: inline-block !important;
+            width: 20px !important;
+            min-width: 20px !important;
+            flex-shrink: 0 !important;
+            text-align: center !important;
+            font-size: 17px !important;
+            line-height: 1 !important;
+        }
+        .sidebar .menu-label { display: inline !important; }
+        .sidebar .sidebar-bottom {
+            margin-top: auto !important;
+            padding: 16px 12px !important;
+            border: 0 !important;
+            border-top: 1px solid #ffffff30 !important;
+            background: transparent !important;
+            border-radius: 0 !important;
+            display: block !important;
+        }
+        .sidebar .signout {
+            width: 100% !important;
+            min-height: 45px !important;
+            padding: 13px !important;
+            margin: 0 !important;
+            background: #ffffff18 !important;
+            border: 1px solid #ffffff40 !important;
+            border-radius: 7px !important;
+            color: #ffffff !important;
+            font-size: 13px !important;
+            text-align: center !important;
+            cursor: pointer;
+        }
+        .sidebar .signout:hover { background: #ffffff2c !important; }
+        .sidebar .mobile-menu { display: none !important; }
+        .sidebar .menu-label, .sidebar .brand-copy { visibility: visible !important; }
+        body:has(.sidebar) .main,
+        body:has(.sidebar) .shell > main,
+        body:has(.sidebar) .app > main {
+            margin-left: 250px !important;
+            min-width: 0 !important;
+        }
+        body:has(.sidebar) .shell, body:has(.sidebar) .app {
+            display: block !important;
+            min-height: 100vh !important;
+        }
+
+        /* MOBILE SIDEBAR ADJUSTMENTS
+           On smaller screens, the sidebar displays mainly its logo and
+           navigation icons so the administrator has more room to view content. */
+
+        @media (max-width: 700px) {
+            .sidebar { width: 76px !important; }
+            .sidebar .brand {
+                justify-content: center !important;
+                padding: 8px !important;
+            }
+            .sidebar .brand-copy, .sidebar .menu-title, .sidebar .menu-label {
+                display: none !important;
+            }
+            .sidebar .menu { padding: 12px 8px !important; }
+            .sidebar .menu a {
+                justify-content: center !important;
+                padding: 13px 5px !important;
+                min-height: 45px !important;
+            }
+            .sidebar .menu a.active { padding-left: 1px !important; }
+            .sidebar .menu-icon { width: 20px !important; min-width: 20px !important; }
+            .sidebar .sidebar-bottom { padding: 12px 6px !important; }
+            .sidebar .signout { padding: 10px 2px !important; font-size: 10px !important; }
+            .sidebar .signout-label { display: none !important; }
+            body:has(.sidebar) .main,
+            body:has(.sidebar) .shell > main,
+            body:has(.sidebar) .app > main { margin-left: 76px !important; }
+        }
+
+    </style>
+
+<!-- These external stylesheets provide the shared design used by the portal pages. -->
+<link href="../portal-theme.css?v=uniform-orange-20261107" rel="stylesheet"/>
+<link rel="stylesheet" href="../header-uniform.css?v=20261107-4">
+
+<style id="dark-orange-header-final">
+
+/* FINAL HEADER DESIGN
+   This group makes the dashboard header use the same dark orange
+   appearance and sizing as the other pages in the administrator portal. */
+
+html body .unified-portal-header,
+html body header.unified-portal-header,
+html body div.unified-portal-header {
+  background:#a34a1d !important;
+  background-color:#a34a1d !important;
+  background-image:none !important;
+  color:#ffffff !important;
+  border:0 !important;
+  border-bottom:3px solid #e9d1b3 !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+  box-sizing:border-box !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  height:82px !important;
+  min-height:82px !important;
+  max-height:82px !important;
+  padding:17px 30px !important;
+  gap:16px !important;
+  width:100% !important;
+}
+html body .unified-portal-header h1 {
+  color:white !important; font:700 21px/1.25 Arial,Helvetica,sans-serif !important;
+  margin:0 0 3px !important; padding:0 !important;
+}
+html body .unified-portal-header p,
+html body .unified-portal-header .sub {
+  color:#fff0e4 !important; font:400 12px/1.3 Arial,Helvetica,sans-serif !important;
+  margin:0 !important; padding:0 !important;
+}
+html body .unified-portal-header .user-chip,
+html body .unified-portal-header .profile,
+html body .unified-portal-header .date,
+html body .unified-portal-header #adminName,
+html body .unified-portal-header #userName {
+  background:transparent !important; border:0 !important; color:#fff !important;
+  font:500 12px Arial,Helvetica,sans-serif !important;
+  text-align:right !important; box-shadow:none !important;
+}
+html body .app > main.main > .unified-portal-header {
+  margin:-30px -34px 26px !important; width:calc(100% + 68px) !important;
+}
+html body .shell > main > .unified-portal-header {
+  margin:-28px -28px 20px !important; width:calc(100% + 56px) !important;
+}
+@media(max-width:900px) {
+ html body .app > main.main > .unified-portal-header {
+   margin:-24px -20px 26px !important;width:calc(100% + 40px) !important;
+ }
+ html body .shell > main > .unified-portal-header {
+   margin:-18px -18px 20px !important;width:calc(100% + 36px) !important;
+ }
+}
+@media(max-width:700px) {
+ html body .unified-portal-header {padding:13px 16px !important}
+ html body .unified-portal-header h1 {font-size:18px !important}
+ html body .app > main.main > .unified-portal-header {
+   margin:-23px -15px 24px !important;width:calc(100% + 30px) !important;
+ }
+ html body .shell > main > .unified-portal-header {
+   margin:-14px -14px 20px !important;width:calc(100% + 28px) !important;
+ }
+}
+
+</style>
+
+<!-- This connects the dashboard to the system's PWA manifest. -->
+<link rel="manifest" href="../manifest.webmanifest"/>
+</head>
+
+<body>
+
+<!-- ADMIN SIDEBAR
+     This is the left navigation menu shown to the administrator.
+     It provides links to the different management sections of the system. -->
+
+<aside class="sidebar">
+<div class="brand">
+<div class="brand-mark" id="logoSlot"><img alt="Barangay Document Request logo" src="../barangay-logo.png"/></div>
+<div class="brand-copy">
+<h2>Barangay Document Request</h2>
+<p>Admin Management Portal</p>
+</div>
+</div>
+<div class="menu-title">MAIN MENU</div>
+<nav aria-label="Admin navigation" class="menu"><a aria-current="page" class="active" href="dashboard.html"><span class="menu-label">Dashboard</span></a><a href="document-requests.html"><span class="menu-label">Document Requests</span></a><a href="pickup-calendar.html"><span class="menu-label">Pickup Calendar</span></a><a href="residents.html"><span class="menu-label">Residents</span></a><a href="messages.html"><span class="menu-label">Messages</span></a><a href="system-records.html"><span class="menu-label">System Records</span></a><div class="sidebar-bottom">
+<button class="signout" id="signoutBtn" type="button">Sign Out</button>
+</div></nav>
+
+</aside>
+
+<main class="main">
+
+<!-- DASHBOARD HEADER
+     This is the top section of the page. It displays the dashboard title,
+     system name, and the name of the currently logged-in administrator. -->
+
+<header class="topbar unified-portal-header" style="background-color:#a34a1d !important;background-image:none !important;color:#fff !important;">
+<div>
+<h1>Administrator Dashboard</h1>
+<p>Barangay Document Request and Management System</p>
+</div>
+<div class="user-chip" id="adminName">Administrator</div>
+</header>
+
+<section class="content">
+
+<!-- WELCOME SECTION AND LIVE CLOCK
+     The administrator sees a welcome message with their account name.
+     The date and time are also displayed and updated automatically. -->
+
+<div class="welcome">
+<div>
+<h2>Welcome, <span id="welcomeName">Administrator</span>!</h2>
+<p>Monitor document requests and manage barangay services.</p>
+</div>
+<div aria-live="off" class="clock">
+<strong id="todayDate">Loading date...</strong><br/>
+<span id="todayTime">Loading time...</span>
+</div>
+</div>
+
+<!-- SYSTEM NOTICE
+     This area displays messages such as checking administrator access,
+     loading document requests, or reporting a problem. -->
+
+<div class="notice" id="notice" role="status">Checking your administrator access...</div>
+
+<!-- REQUEST SUMMARY
+     These four cards give the administrator a quick overview of the
+     number of requests and their current statuses. -->
+
+<div class="stats">
+<div class="stat"><small>Total Requests</small><strong id="totalRequests">—</strong></div>
+<div class="stat"><small>Under Review</small><strong id="underReview">—</strong></div>
+<div class="stat"><small>Processing</small><strong id="processing">—</strong></div>
+<div class="stat"><small>Ready for Pickup</small><strong id="ready">—</strong></div>
+</div>
+
+<div class="dashboard-grid">
+
+<!-- LATEST DOCUMENT REQUESTS
+     This section displays up to six of the most recent resident requests.
+     Each entry shows the document requested, resident name, request date,
+     current status, and a Manage button for viewing its details. -->
+
+<section class="panel">
+<div class="panel-head"><h3>Latest Document Requests</h3><a href="document-requests.html">View All</a></div>
+<div class="request-list" id="requestList"><div class="empty">Loading requests...</div></div>
+</section>
+
+<!-- QUICK ACTIONS
+     These are shortcuts to other administrator pages.
+     The administrator can open request management, messages,
+     pickup schedules, resident records, and system records from here. -->
+
+<section class="panel">
+<div class="panel-head"><h3>Quick Actions</h3></div>
+<div class="actions">
+<a class="action" href="document-requests.html"><strong>Manage Document Requests</strong><small>Review applications and update request progress.</small></a>
+<a class="action" href="messages.html"><strong>Messages — Talk to Residents</strong><small>Open private resident conversations.</small></a>
+<a class="action" href="pickup-calendar.html"><strong>Pickup Schedule Calendar</strong><small>Check upcoming document pickups.</small></a>
+<a class="action" href="residents.html"><strong>Resident Records</strong><small>View registered residents and their profiles.</small></a>
+<a class="action" href="system-records.html"><strong>System Records</strong><small>Review request and activity history.</small></a>
+</div>
+</section>
+
+</div>
+</section>
+</main>
+
+<!-- REQUEST DETAILS MODAL
+     This is the pop-up window shown when the administrator clicks Manage.
+     It displays the selected request's information without opening
+     another page. The Close button hides this pop-up. -->
+
+<div class="overlay" hidden="" id="requestOverlay">
+<section aria-labelledby="modalTitle" aria-modal="true" class="modal" role="dialog">
+<div class="modal-head">
+<h3 id="modalTitle">Request Details</h3>
+<button class="close" id="closeModal" type="button">Close</button>
+</div>
+<div class="modal-body" id="modalBody"></div>
+<div class="modal-foot">This dashboard provides a read-only request preview. Status updates, payment verification, and private messaging will be added in their dedicated Admin pages.</div>
+</section>
+</div>
+
+<script type="module">
+
+        /* FIREBASE CONNECTION
+           This connects the administrator dashboard to Firebase.
+           Firebase is where the system checks administrator accounts
+           and retrieves the document requests displayed on the page. */
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+        import { getAuth, setPersistence, browserSessionPersistence, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+        import { getFirestore, collection, doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+        /* FIREBASE PROJECT SETTINGS
+           These settings identify the Firebase project used by
+           the Barangay Document Request and Management System. */
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBnWyjIXO1StOArcObzPH0UZjn6ICXfXCA",
+            authDomain: "barangay-doc-req.firebaseapp.com",
+            projectId: "barangay-doc-req",
+            storageBucket: "barangay-doc-req.firebasestorage.app",
+            messagingSenderId: "176118755540",
+            appId: "1:176118755540:web:45ee5bedf3f3f8c4510b41"
+        };
+
+        /* INITIALIZE FIREBASE AND DASHBOARD VARIABLES
+           This prepares the connection to the administrator account
+           and the database where document requests are stored.
+           The request list starts empty while the system is loading. */
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const $ = id => document.getElementById(id);
+        let requests = [];
+        let unsubscribeRequests = null;
+        let verifiedAdmin = false;
+
+        /* SHOW SYSTEM NOTICE
+           This function displays messages on the dashboard.
+           For example, the administrator can see when access is being
+           checked, requests are loading, or an error has occurred. */
+
+        function showNotice(message, error = false) {
+            $("notice").textContent = message;
+            $("notice").className = error ? "notice error" : "notice";
+            $("notice").hidden = false;
+        }
+
+        /* UPDATE DATE AND TIME
+           This function displays the current date and Philippine time
+           in the welcome section of the administrator dashboard. */
+
+        function updateClock() {
+            const now = new Date();
+            $("todayDate").textContent = new Intl.DateTimeFormat("en-PH", {
+                timeZone: "Asia/Manila", weekday: "long", month: "long", day: "numeric", year: "numeric"
+            }).format(now);
+            $("todayTime").textContent = new Intl.DateTimeFormat("en-PH", {
+                timeZone: "Asia/Manila", hour: "numeric", minute: "2-digit", second: "2-digit", hour12: true
+            }).format(now) + " (PHT)";
+        }
+
+        /* PREPARE DATE VALUES
+           This function helps the dashboard recognize dates saved
+           in the database so they can be displayed correctly. */
+
+        function dateValue(value) {
+            if (!value) return null;
+            if (typeof value.toDate === "function") return value.toDate();
+            const parsed = new Date(value);
+            return Number.isNaN(parsed.getTime()) ? null : parsed;
+        }
+
+        /* FORMAT REQUEST DATES
+           This function prepares the date and time format used when
+           displaying when a resident submitted a document request. */
+
+        function formatDate(value) {
+            const date = dateValue(value);
+            return date ? date.toLocaleString("en-PH", { timeZone: "Asia/Manila", dateStyle: "medium", timeStyle: "short" }) : "Not recorded";
+        }
+
+        /* DISPLAY REQUEST INFORMATION
+           This function creates a row in the request details pop-up.
+           Each row contains a label and its corresponding information,
+           such as the resident name, tracking number, or payment status. */
+
+        function addDetail(container, label, value) {
+            const row = document.createElement("div");
+            row.className = "detail";
+            const key = document.createElement("strong");
+            key.textContent = label;
+            const content = document.createElement("span");
+            content.textContent = String(value ?? "Not provided");
+            row.append(key, content);
+            container.appendChild(row);
+        }
+
+        /* OPEN REQUEST DETAILS
+           When the administrator clicks Manage, this function finds
+           the selected request and displays its information in a pop-up.
+           The administrator can see the tracking number, resident details,
+           request status, pickup schedule, payment information,
+           and other applicant details when available. */
+
+        function openRequest(id) {
+            const request = requests.find(item => item.id === id);
+            if (!request) return;
+            $("modalTitle").textContent = request.documentName || request.documentType || "Document Request";
+            const body = $("modalBody");
+            body.replaceChildren();
+            addDetail(body, "Tracking Number", request.id);
+            addDetail(body, "Resident", request.residentName || "Not provided");
+            addDetail(body, "Resident UID", request.residentId);
+            addDetail(body, "Status", request.status || "Under Review");
+            addDetail(body, "Requested On", formatDate(request.createdAt));
+            addDetail(body, "Pickup Date", request.preferredPickupDate || request.pickupDate);
+            addDetail(body, "Pickup Time", request.preferredPickupTime || request.pickupTime);
+            addDetail(body, "Payment Method", request.paymentMethod);
+            addDetail(body, "Payment Status", request.paymentStatus);
+            addDetail(body, "Requirements", request.requirementsUploadStatus);
+            if (request.applicantDetails && typeof request.applicantDetails === "object") {
+                Object.entries(request.applicantDetails).forEach(([key, value]) => {
+                    if (typeof value !== "object") addDetail(body, key, value);
+                });
+            }
+            $("requestOverlay").hidden = false;
+            $("closeModal").focus();
+        }
+
+        /* UPDATE DASHBOARD REQUESTS
+           This function updates the four summary cards using the requests
+           retrieved from the database. It also displays the six most recent
+           requests in the Latest Document Requests section.
+           When there are no requests, a message is shown instead. */
+
+        function renderRequests() {
+            const count = status => requests.filter(item => (item.status || "Under Review").toLowerCase() === status.toLowerCase()).length;
+            $("totalRequests").textContent = requests.length;
+            $("underReview").textContent = count("Under Review");
+            $("processing").textContent = count("Processing");
+            $("ready").textContent = count("Ready for Pickup");
+            const list = $("requestList");
+            list.replaceChildren();
+            const recent = [...requests].sort((a, b) => (dateValue(b.createdAt)?.getTime() || 0) - (dateValue(a.createdAt)?.getTime() || 0)).slice(0, 6);
+            if (!recent.length) {
+                const empty = document.createElement("div");
+                empty.className = "empty";
+                empty.textContent = "No document requests found yet. New resident requests will appear here.";
+                list.appendChild(empty);
+                return;
+            }
+            recent.forEach(request => {
+                const row = document.createElement("div");
+                row.className = "request-row";
+                const info = document.createElement("div");
+                const title = document.createElement("strong");
+                title.textContent = request.documentName || request.documentType || "Document Request";
+                const resident = document.createElement("p");
+                resident.textContent = `Resident: ${request.residentName || "Unknown"}`;
+                const date = document.createElement("p");
+                date.textContent = `Requested: ${formatDate(request.createdAt)}`;
+                info.append(title, resident, date);
+                const actions = document.createElement("div");
+                actions.className = "request-actions";
+                const status = document.createElement("span");
+                status.className = "status";
+                status.textContent = request.status || "Under Review";
+                const button = document.createElement("button");
+                button.className = "btn";
+                button.type = "button";
+                button.textContent = "Manage";
+                button.title = "Preview request details";
+                button.addEventListener("click", () => openRequest(request.id));
+                actions.append(status, button);
+                row.append(info, actions);
+                list.appendChild(row);
+            });
+        }
+
+        /* POP-UP CLOSE BUTTON
+           The administrator can close the request details by clicking
+           Close, clicking outside the pop-up, or pressing the Escape key. */
+
+        $("closeModal").addEventListener("click", () => $("requestOverlay").hidden = true);
+        $("requestOverlay").addEventListener("click", event => {
+            if (event.target === $("requestOverlay")) $("requestOverlay").hidden = true;
+        });
+        document.addEventListener("keydown", event => {
+            if (event.key === "Escape") $("requestOverlay").hidden = true;
+        });
+
+        /* ADMINISTRATOR SIGN OUT
+           When the administrator clicks Sign Out, the system stops
+           listening for request updates, ends the current session,
+           and returns to the login page. */
+
+        $("signoutBtn").addEventListener("click", async () => {
+            if (unsubscribeRequests) unsubscribeRequests();
+            await signOut(auth);
+            window.location.replace("../index.html");
+        });
+
+        /* START THE DASHBOARD CLOCK
+           The date and time are displayed immediately and refreshed
+           every second while the dashboard is open. */
+
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        /* ADMINISTRATOR SESSION AND ACCESS CHECK
+           This group checks whether the person opening the dashboard
+           is logged in and has an active administrator account.
+           Only authorized administrators can continue to the dashboard. */
+
+        // Session persistence keeps independently opened tabs from replacing each other's login.
+        // Set before subscribing to authentication state.
+        setPersistence(auth, browserSessionPersistence).then(() => {
+        onAuthStateChanged(auth, async user => {
+            if (unsubscribeRequests) { unsubscribeRequests(); unsubscribeRequests = null; }
+            verifiedAdmin = false;
+            if (!user) { window.location.replace("../index.html"); return; }
+            try {
+                const snapshot = await getDoc(doc(db, "users", user.uid));
+                const profile = snapshot.exists() ? snapshot.data() : null;
+                if (!profile || String(profile.role || "").trim().toLowerCase() !== "admin" || (profile.status && profile.status !== "active")) {
+                    showNotice("Access denied. Only authorized administrators can open this dashboard.", true);
+                    await signOut(auth);
+                    window.location.replace("../index.html");
+                    return;
+                }
+
+                /* DISPLAY ADMINISTRATOR NAME
+                   After the account is verified, the administrator's name
+                   appears in both the welcome message and the top header. */
+
+                verifiedAdmin = true;
+                const name = profile.name || profile.fullName || user.displayName || "Administrator";
+                $("welcomeName").textContent = name;
+                $("adminName").textContent = name;
+                showNotice("Loading document requests...");
+
+                /* LOAD AND MONITOR DOCUMENT REQUESTS
+                   This retrieves the document requests from the database.
+                   When a request is added or updated, the dashboard refreshes
+                   its summary cards and latest request list automatically. */
+
+                unsubscribeRequests = onSnapshot(collection(db, "requests"), snapshot => {
+                    if (!verifiedAdmin) return;
+                    requests = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+                    $("notice").hidden = true;
+                    renderRequests();
+                }, error => {
+                    console.error("Request loading error:", error);
+                    showNotice("Unable to load requests. Admin read access to the requests collection must be enabled in Firestore security rules.", true);
+                    $("requestList").innerHTML = '<div class="empty">Requests are unavailable until Firestore permissions are configured.</div>';
+                });
+            } catch (error) {
+                console.error("Administrator verification error:", error);
+                showNotice("Unable to verify administrator access. Check your connection and Firestore rules.", true);
+            }
+        });
+        }).catch(error => {
+            console.error("Unable to initialize session persistence:", error);
+            window.location.replace("../index.html");
+        });
+    </script>
+
+<!-- PWA SERVICE WORKER
+     This group registers the service worker when the page finishes loading.
+     It supports the Progressive Web App features of the system. -->
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    const serviceWorkerUrl = new URL("../sw.js", window.location.href);
+    navigator.serviceWorker.register(serviceWorkerUrl).catch((error) => {
+      console.error("PWA service worker registration failed:", error);
+    });
+  });
+}
+</script>
+
+</body>
+</html>
