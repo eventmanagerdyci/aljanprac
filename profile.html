@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="#c8662d" name="theme-color"/>
+<title>My Profile | Barangay Document Services</title>
+
+<style>
+        /* ==========================================
+           1. COLOR VARIABLES
+           These variables store the colors used throughout
+           the page so the design stays consistent.
+           ========================================== */
+        :root {
+            --orange: #c8662d;
+            --orange-dark: #a74b1d;
+            --beige: #e9d1b3;
+            --cream: #fff9f0;
+            --ink: #342b26;
+            --muted: #81776f;
+            --line: #eee2d5;
+        }
+
+        /* ==========================================
+           2. GENERAL PAGE STYLES
+           These rules set the default appearance of the
+           page, including fonts, spacing, and buttons.
+           ========================================== */
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: var(--cream); color: var(--ink); }
+        button, input { font: inherit; }
+        button { cursor: pointer; }
+        a { text-decoration: none; }
+        [hidden] { display: none !important; }
+
+        /* ==========================================
+           3. SIDEBAR NAVIGATION DESIGN
+           This section styles the left-side navigation
+           menu where residents can access different pages.
+           ========================================== */
+        .sidebar {
+            position: fixed;
+            inset: 0 auto 0 0;
+            width: 250px;
+            background: var(--orange-dark);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            border-right: 3px solid var(--beige);
+            z-index: 30;
+        }
+        .brand { display: flex; align-items: center; gap: 12px; min-height: 88px; padding: 18px; border-bottom: 1px solid #ffffff30; }
+        .brand-icon { width: 45px; height: 45px; flex: none; display: grid; place-items: center; background: #ffffff20; border: 1px solid #ffffff35; border-radius: 10px; font-size: 23px; }
+        .brand strong { display: block; font-size: 15px; }
+        .brand small { display: block; color: #f6d8c3; font-size: 10px; margin-top: 5px; }
+        .menu-heading { padding: 24px 20px 10px; font-size: 11px; letter-spacing: 1px; color: #f2caa6; }
+        .menu { padding: 0 12px; }
+        .menu a { display: block; padding: 13px 15px; margin-bottom: 6px; border-radius: 7px; color: #fff0e7; font-size: 13px; }
+        .menu a:hover { background: #ffffff18; }
+        .menu a.active { background: #fff; color: var(--orange-dark); font-weight: bold; border-left: 4px solid var(--beige); }
+
+        /* Sign-out button placement and appearance at the bottom of the sidebar. */
+        .sidebar-bottom { margin-top: auto; padding: 16px 12px; border-top: 1px solid #ffffff30; }
+        .signout { width: 100%; padding: 12px; border: 1px solid #ffffff50; background: #ffffff17; border-radius: 7px; color: #fff; }
+        .signout:hover { background: #ffffff2c; }
+
+        /* ==========================================
+           4. MAIN CONTENT AND HEADER
+           These styles control the main page area, top
+           header, welcome message, and resident name.
+           ========================================== */
+        .main { margin-left: 250px; min-height: 100vh; }
+        .topbar { min-height: 76px; padding: 18px 30px; display: flex; align-items: center; justify-content: space-between; gap: 15px; background: var(--orange); border-bottom: 3px solid var(--beige); color: #fff; }
+        .topbar h1 { margin: 0 0 5px; font-size: 21px; }
+        .topbar p { margin: 0; font-size: 12px; color: #fff0e4; }
+        .user-chip { font-size: 12px; font-weight: bold; text-align: right; }
+        .content { max-width: 1120px; margin: auto; padding: 30px; }
+        .welcome { margin-bottom: 24px; }
+        .welcome h2 { margin: 0 0 8px; font-size: 23px; }
+        .welcome p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+        /* ==========================================
+           5. PROFILE BANNER
+           This section styles the resident's profile
+           summary, including the avatar, name, and email.
+           ========================================== */
+        .profile-banner { display: flex; align-items: center; gap: 17px; background: #fff; border: 1px solid var(--line); border-top: 3px solid var(--beige); border-radius: 10px; padding: 22px; margin-bottom: 20px; }
+        .avatar { width: 65px; height: 65px; flex: none; display: grid; place-items: center; border-radius: 50%; background: #f9e8d9; color: var(--orange-dark); font-size: 25px; font-weight: bold; }
+        .profile-banner h3 { font-size: 19px; margin: 0 0 6px; overflow-wrap: anywhere; }
+        .profile-banner p { font-size: 12px; margin: 0; color: var(--muted); overflow-wrap: anywhere; }
+
+        /* ==========================================
+           6. PROFILE INFORMATION PANELS
+           These styles arrange the Personal Information
+           and Change Password sections side by side.
+           ========================================== */
+        .profile-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 20px; align-items: start; }
+        .panel { background: #fff; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+        .panel-head { background: var(--orange); color: #fff; border-bottom: 3px solid var(--beige); padding: 18px 21px; }
+        .panel-head h3 { margin: 0 0 5px; font-size: 16px; }
+        .panel-head p { margin: 0; font-size: 11px; color: #ffe7d5; line-height: 1.5; }
+        .panel-body { padding: 22px; }
+
+        /* ==========================================
+           7. FORM FIELDS AND INPUTS
+           These styles control the text fields, labels,
+           spacing, and appearance when a field is focused
+           or disabled.
+           ========================================== */
+        .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .field { margin-bottom: 17px; }
+        .field label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 7px; color: #5f5147; }
+        .field input { width: 100%; height: 43px; border: 1px solid #e6d8ca; border-radius: 7px; padding: 0 12px; font-size: 13px; color: var(--ink); background: #fffdf9; outline: none; }
+        .field input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px #c8662d1a; }
+        .field input:disabled { background: #f5f2ee; color: #827970; cursor: not-allowed; }
+        .help { margin: 7px 0 0; font-size: 11px; line-height: 1.6; color: var(--muted); }
+
+        /* ==========================================
+           8. BUTTONS AND NOTIFICATION MESSAGES
+           These styles control the Save Changes and
+           Update Password buttons, including feedback
+           messages for successful or failed actions.
+           ========================================== */
+        .primary { border: 0; border-radius: 7px; background: var(--orange); color: #fff; padding: 12px 19px; font-size: 12px; font-weight: bold; border-bottom: 3px solid var(--beige); }
+        .primary:hover { background: var(--orange-dark); }
+        .primary:disabled { opacity: .6; cursor: wait; }
+        .notice { display: none; border-radius: 7px; padding: 11px 13px; margin: 0 0 17px; font-size: 12px; line-height: 1.6; }
+        .notice.show { display: block; }
+        .notice.error { background: #fff0ed; border: 1px solid #f1c5bd; color: #a4322a; }
+        .notice.success { background: #edf8ee; border: 1px solid #c7e7cc; color: #267044; }
+        .loading { padding: 20px 0; color: var(--muted); font-size: 13px; }
+        .small-note { margin-top: 20px; font-size: 12px; line-height: 1.7; color: var(--muted); }
+
+        /* ==========================================
+           9. RESPONSIVE DESIGN
+           These media queries adjust the page layout
+           depending on the screen size of the device.
+           ========================================== */
+        @media (max-width: 1000px) { .profile-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 700px) {
+            .sidebar { width: 88px; }
+            .brand { justify-content: center; padding: 10px 4px; }
+            .brand strong, .brand small, .menu-heading { display: none; }
+            .menu { padding: 0 5px; }
+            .menu a { text-align: center; padding: 12px 3px; font-size: 10px; overflow-wrap: anywhere; }
+            .main { margin-left: 88px; }
+            .topbar { padding: 16px 13px; }
+            .topbar h1 { font-size: 17px; }
+            .topbar p, .user-chip { font-size: 10px; }
+            .content { padding: 18px 12px; }
+            .panel-body { padding: 17px 14px; }
+            .field-row { grid-template-columns: 1fr; gap: 0; }
+            .profile-banner { padding: 16px; gap: 12px; }
+            .avatar { width: 52px; height: 52px; font-size: 21px; }
+        }
+
+        /* ==========================================
+           10. SHARED SIDEBAR DESIGN
+           This additional CSS makes the sidebar match
+           the design used on the other Resident Portal
+           pages. The !important rules give these styles
+           priority over earlier sidebar styles.
+           ========================================== */
+
+        /* Main sidebar container and its fixed position. */
+        .sidebar {
+            position: fixed !important;
+            inset: 0 auto 0 0 !important;
+            width: 250px !important;
+            height: 100vh !important;
+            min-height: 0 !important;
+            padding: 0 !important;
+            gap: 0 !important;
+            background: #a74b1d !important;
+            color: #ffffff !important;
+            border: 0 !important;
+            border-right: 3px solid #e9d1b3 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            z-index: 30 !important;
+            border-radius: 0 !important;
+            overflow-y: auto;
+        }
+
+        /* Sidebar logo and system name area. */
+        .sidebar .brand {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            min-height: 90px !important;
+            padding: 18px !important;
+            margin: 0 !important;
+            border: 0 !important;
+            border-bottom: 1px solid #ffffff30 !important;
+            color: #ffffff !important;
+            background: transparent !important;
+            border-radius: 0 !important;
+            flex-shrink: 0;
+        }
+
+        /* Logo container inside the sidebar. */
+        .sidebar .brand-mark {
+            width: 47px !important;
+            height: 47px !important;
+            flex-shrink: 0;
+            border: 2px dashed #f4d5b5 !important;
+            border-radius: 9px !important;
+            background: transparent !important;
+            display: grid !important;
+            place-items: center !important;
+            font-size: 11px !important;
+            color: #ffffff !important;
+        }
+
+        /* System name and portal label beside the logo. */
+        .sidebar .brand-copy h2 {
+            margin: 0 0 5px !important;
+            font-size: 15px !important;
+            color: #ffffff !important;
+            font-weight: 700 !important;
+        }
+        .sidebar .brand-copy p {
+            margin: 0 !important;
+            color: #f7d8c3 !important;
+            font-size: 10px !important;
+            line-height: 1.5 !important;
+        }
+
+        /* Main Menu heading and navigation links. */
+        .sidebar .menu-title {
+            color: #f5d5b1 !important;
+            font-size: 11px !important;
+            font-weight: bold !important;
+            letter-spacing: 1px !important;
+            padding: 27px 20px 12px !important;
+            margin: 0 !important;
+            background: transparent !important;
+        }
+        .sidebar .menu {
+            display: block !important;
+            padding: 0 12px !important;
+            margin: 0 !important;
+            background: transparent !important;
+            border: 0 !important;
+        }
+
+        /* Individual navigation links and their hover effect. */
+        .sidebar .menu a {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            min-height: 45px !important;
+            padding: 12px 14px !important;
+            margin: 0 0 5px !important;
+            color: #fff4e9 !important;
+            text-decoration: none !important;
+            border: 0 !important;
+            border-radius: 7px !important;
+            font-size: 13px !important;
+            font-weight: 400 !important;
+            line-height: 1.4 !important;
+            background: transparent !important;
+            text-align: left !important;
+        }
+        .sidebar .menu a:hover {
+            background: #ffffff1b !important;
+        }
+
+        /* Highlights the currently selected page in the sidebar. */
+        .sidebar .menu a.active {
+            background: #ffffff !important;
+            color: #a74b1d !important;
+            font-weight: bold !important;
+            border-left: 4px solid #e9d1b3 !important;
+            padding-left: 10px !important;
+        }
+
+        /* Navigation icons and their text labels. */
+        .sidebar .menu-icon {
+            display: inline-block !important;
+            width: 20px !important;
+            min-width: 20px !important;
+            flex-shrink: 0 !important;
+            text-align: center !important;
+            font-size: 17px !important;
+            line-height: 1 !important;
+        }
+        .sidebar .menu-label { display: inline !important; }
+
+        /* Sign-out area at the bottom of the sidebar. */
+        .sidebar .sidebar-bottom {
+            margin-top: auto !important;
+            padding: 16px 12px !important;
+            border: 0 !important;
+            border-top: 1px solid #ffffff30 !important;
+            background: transparent !important;
+            border-radius: 0 !important;
+            display: block !important;
+        }
+        .sidebar .signout {
+            width: 100% !important;
+            min-height: 45px !important;
+            padding: 13px !important;
+            margin: 0 !important;
+            background: #ffffff18 !important;
+            border: 1px solid #ffffff40 !important;
+            border-radius: 7px !important;
+            color: #ffffff !important;
+            font-size: 13px !important;
+            text-align: center !important;
+            cursor: pointer;
+        }
+        .sidebar .signout:hover { background: #ffffff2c !important; }
+
+        /* Hides the mobile menu element and keeps the sidebar text visible on desktop. */
+        .sidebar .mobile-menu { display: none !important; }
+        .sidebar .menu-label, .sidebar .brand-copy { visibility: visible !important; }
+
+        /* Keeps the main content beside the fixed sidebar. */
+        body:has(.sidebar) .main,
+        body:has(.sidebar) .shell > main,
+        body:has(.sidebar) .app > main {
+            margin-left: 250px !important;
+            min-width: 0 !important;
+        }
+        body:has(.sidebar) .shell, body:has(.sidebar) .app {
+            display: block !important;
+            min-height: 100vh !important;
+        }
+
+        /* Adjusts the shared sidebar for smaller mobile screens. */
+        @media (max-width: 700px) {
+            .sidebar { width: 76px !important; }
+            .sidebar .brand {
+                justify-content: center !important;
+                padding: 8px !important;
+            }
+            .sidebar .brand-copy, .sidebar .menu-title, .sidebar .menu-label {
+                display: none !important;
+            }
+            .sidebar .menu { padding: 12px 8px !important; }
+            .sidebar .menu a {
+                justify-content: center !important;
+                padding: 13px 5px !important;
+                min-height: 45px !important;
+            }
+            .sidebar .menu a.active { padding-left: 1px !important; }
+            .sidebar .menu-icon { width: 20px !important; min-width: 20px !important; }
+            .sidebar .sidebar-bottom { padding: 12px 6px !important; }
+            .sidebar .signout { padding: 10px 2px !important; font-size: 10px !important; }
+            .sidebar .signout-label { display: none !important; }
+            body:has(.sidebar) .main,
+            body:has(.sidebar) .shell > main,
+            body:has(.sidebar) .app > main { margin-left: 76px !important; }
+        }
+
+</style>
+
+<!-- External stylesheets used to keep the portal design consistent across pages. -->
+<link href="../portal-theme.css?v=uniform-orange-20261107" rel="stylesheet"/>
+<link rel="stylesheet" href="../header-uniform.css?v=20261107-4">
+
+<style id="dark-orange-header-final">
+
+/* ==========================================
+   11. UNIFIED PORTAL HEADER DESIGN
+   This section applies the same dark orange header
+   appearance to the different pages of the portal.
+   ========================================== */
+
+/* Main header background, size, alignment, and border. */
+html body .unified-portal-header,
+html body header.unified-portal-header,
+html body div.unified-portal-header {
+  background:#a34a1d !important;
+  background-color:#a34a1d !important;
+  background-image:none !important;
+  color:#ffffff !important;
+  border:0 !important;
+  border-bottom:3px solid #e9d1b3 !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+  box-sizing:border-box !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  height:82px !important;
+  min-height:82px !important;
+  max-height:82px !important;
+  padding:17px 30px !important;
+  gap:16px !important;
+  width:100% !important;
+}
+
+/* Header title and subtitle text. */
+html body .unified-portal-header h1 {
+  color:white !important; font:700 21px/1.25 Arial,Helvetica,sans-serif !important;
+  margin:0 0 3px !important; padding:0 !important;
+}
+html body .unified-portal-header p,
+html body .unified-portal-header .sub {
+  color:#fff0e4 !important; font:400 12px/1.3 Arial,Helvetica,sans-serif !important;
+  margin:0 !important; padding:0 !important;
+}
+
+/* Resident name and other information displayed on the right side of the header. */
+html body .unified-portal-header .user-chip,
+html body .unified-portal-header .profile,
+html body .unified-portal-header .date,
+html body .unified-portal-header #adminName,
+html body .unified-portal-header #userName {
+  background:transparent !important; border:0 !important; color:#fff !important;
+  font:500 12px Arial,Helvetica,sans-serif !important;
+  text-align:right !important; box-shadow:none !important;
+}
+
+/* Adjusts header spacing depending on the page layout. */
+html body .app > main.main > .unified-portal-header {
+  margin:-30px -34px 26px !important; width:calc(100% + 68px) !important;
+}
+html body .shell > main > .unified-portal-header {
+  margin:-28px -28px 20px !important; width:calc(100% + 56px) !important;
+}
+
+/* Header adjustments for tablet-sized screens. */
+@media(max-width:900px) {
+ html body .app > main.main > .unified-portal-header {
+   margin:-24px -20px 26px !important;width:calc(100% + 40px) !important;
+ }
+ html body .shell > main > .unified-portal-header {
+   margin:-18px -18px 20px !important;width:calc(100% + 36px) !important;
+ }
+}
+
+/* Header adjustments for mobile screens. */
+@media(max-width:700px) {
+ html body .unified-portal-header {padding:13px 16px !important}
+ html body .unified-portal-header h1 {font-size:18px !important}
+ html body .app > main.main > .unified-portal-header {
+   margin:-23px -15px 24px !important;width:calc(100% + 30px) !important;
+ }
+ html body .shell > main > .unified-portal-header {
+   margin:-14px -14px 20px !important;width:calc(100% + 28px) !important;
+ }
+}
+
+</style>
+
+<!-- PWA manifest connects this page to the Progressive Web App configuration. -->
+<link rel="manifest" href="../manifest.webmanifest"/>
+</head>
+
+<body>
+
+<!-- ==========================================
+     12. RESIDENT SIDEBAR NAVIGATION
+     Contains the system logo, resident menu links,
+     and the Sign Out button.
+     ========================================== -->
+<aside class="sidebar">
+
+<div class="brand">
+<div class="brand-mark" id="logoSlot"><img alt="Barangay Document Request logo" src="../barangay-logo.png"/></div>
+<div class="brand-copy">
+<h2>Barangay Document Request</h2>
+<p>Resident Portal</p>
+</div>
+</div>
+
+<div class="menu-title">MAIN MENU</div>
+
+<!-- Links allow residents to navigate to the other portal pages. -->
+<nav aria-label="Resident navigation" class="menu">
+<a href="dashboard.html"><span class="menu-label">Dashboard</span></a>
+<a href="available-documents.html"><span class="menu-label">Available Documents</span></a>
+<a href="my-requests.html"><span class="menu-label">My Requests</span></a>
+<a href="notifications.html"><span class="menu-label">Notifications</span></a>
+<a aria-current="page" class="active" href="profile.html"><span class="menu-label">My Profile</span></a>
+
+<!-- Sign-out button is placed at the bottom of the navigation menu. -->
+<div class="sidebar-bottom">
+<button class="signout" id="signoutBtn" type="button">Sign Out</button>
+</div>
+</nav>
+
+</aside>
+
+<!-- ==========================================
+     13. MAIN PAGE HEADER
+     Displays the current page title, system name,
+     and resident's name.
+     ========================================== -->
+<main class="main">
+<header class="topbar unified-portal-header" style="background-color:#a34a1d !important;background-image:none !important;color:#fff !important;">
+<div>
+<h1>My Profile</h1>
+<p>Barangay Document Request and Management System</p>
+</div>
+<div class="user-chip" id="userChip">Resident</div>
+</header>
+
+<!-- ==========================================
+     14. PROFILE PAGE CONTENT
+     Contains the account information, resident
+     profile summary, and profile management forms.
+     ========================================== -->
+<section class="content">
+
+<div class="welcome">
+<h2>Account Information</h2>
+<p>Review your personal details and manage your account security.</p>
+</div>
+
+<!-- Profile banner displays the resident's name, email, and initial. -->
+<div class="profile-banner">
+<div class="avatar" id="avatar">R</div>
+<div>
+<h3 id="displayName">Resident</h3>
+<p id="displayEmail">Loading account...</p>
+</div>
+</div>
+
+<!-- Loading message is shown while the system retrieves the resident's account. -->
+<p class="loading" id="loading">Checking your resident account...</p>
+
+<!-- This section becomes visible after the resident's profile is successfully loaded. -->
+<div class="profile-grid" hidden="" id="profileContent">
+
+<!-- ==========================================
+     15. PERSONAL INFORMATION FORM
+     Allows the resident to view and update their
+     name and contact number.
+     ========================================== -->
+<section class="panel">
+<div class="panel-head">
+<h3>Personal Information</h3>
+<p>Update your name and contact number.</p>
+</div>
+<div class="panel-body">
+
+<!-- Displays success or error messages after saving profile information. -->
+<div aria-live="polite" class="notice" id="profileNotice" role="status"></div>
+
+<form id="profileForm">
+<div class="field-row">
+<div class="field">
+<label for="firstName">First Name</label>
+<input autocomplete="given-name" id="firstName" maxlength="80" required=""/>
+</div>
+<div class="field">
+<label for="lastName">Last Name</label>
+<input autocomplete="family-name" id="lastName" maxlength="80" required=""/>
+</div>
+</div>
+
+<div class="field">
+<label for="contactNumber">Contact Number</label>
+<input autocomplete="tel" id="contactNumber" maxlength="20" placeholder="09XXXXXXXXX" type="tel"/>
+</div>
+
+<!-- Age and email are disabled because they cannot be edited in this form. -->
+<div class="field-row">
+<div class="field">
+<label for="age">Age</label>
+<input disabled="" id="age" placeholder="Not provided" type="text"/>
+<p class="help">Age is not collected by the current registration form. We can add a verified birthdate field after updating the database rules.</p>
+</div>
+<div class="field">
+<label for="email">Email Address</label>
+<input disabled="" id="email" type="email"/>
+<p class="help">Your sign-in email is managed by Firebase Authentication.</p>
+</div>
+</div>
+
+<!-- Submits the resident's updated personal information. -->
+<button class="primary" id="saveProfileBtn" type="submit">Save Changes</button>
+</form>
+</div>
+</section>
+
+<!-- ==========================================
+     16. CHANGE PASSWORD FORM
+     Allows the resident to change their password
+     after confirming their current password.
+     ========================================== -->
+<section class="panel">
+<div class="panel-head">
+<h3>Change Password</h3>
+<p>Confirm your current password to set a new one.</p>
+</div>
+<div class="panel-body">
+
+<!-- Displays success or error messages after a password update attempt. -->
+<div aria-live="polite" class="notice" id="passwordNotice" role="status"></div>
+
+<form id="passwordForm">
+<div class="field">
+<label for="currentPassword">Current Password</label>
+<input autocomplete="current-password" id="currentPassword" required="" type="password"/>
+</div>
+<div class="field">
+<label for="newPassword">New Password</label>
+<input autocomplete="new-password" id="newPassword" minlength="8" required="" type="password"/>
+</div>
+<div class="field">
+<label for="confirmPassword">Confirm New Password</label>
+<input autocomplete="new-password" id="confirmPassword" minlength="8" required="" type="password"/>
+</div>
+
+<!-- Submits the password change request. -->
+<button class="primary" id="changePasswordBtn" type="submit">Update Password</button>
+</form>
+
+<p class="small-note">Use a unique password with at least eight characters. Your password is never stored in your Firestore profile.</p>
+</div>
+</section>
+
+</div>
+</section>
+</main>
+
+<!-- ==========================================
+     17. FIREBASE IMPORTS
+     Imports the Firebase functions needed for
+     authentication, database access, and profile updates.
+     ========================================== -->
+<script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+        import {
+            getAuth, setPersistence, browserSessionPersistence, onAuthStateChanged, signOut, updatePassword,
+            EmailAuthProvider, reauthenticateWithCredential, updateProfile
+        } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+        import {
+            getFirestore, doc, getDoc, updateDoc, serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+        /* ==========================================
+           18. FIREBASE CONFIGURATION
+           Contains the connection information that
+           identifies this system's Firebase project.
+           ========================================== */
+        const firebaseConfig = {
+            apiKey: "AIzaSyBnWyjIXO1StOArcObzPH0UZjn6ICXfXCA",
+            authDomain: "barangay-doc-req.firebaseapp.com",
+            projectId: "barangay-doc-req",
+            storageBucket: "barangay-doc-req.firebasestorage.app",
+            messagingSenderId: "176118755540",
+            appId: "1:176118755540:web:45ee5bedf3f3f8c4510b41"
+        };
+
+        /* ==========================================
+           19. INITIALIZE FIREBASE SERVICES
+           Connects the page to Firebase Authentication
+           and Cloud Firestore.
+           ========================================== */
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Isolate the login session in this browser tab.
+        await setPersistence(auth, browserSessionPersistence);
+        const db = getFirestore(app);
+
+        /* ==========================================
+           20. GLOBAL VARIABLES AND ELEMENT SELECTOR
+           The $ function makes it easier to find HTML
+           elements using their IDs.
+           currentUser stores the logged-in Firebase user.
+           currentProfile stores the resident's Firestore data.
+           ========================================== */
+        const $ = id => document.getElementById(id);
+        let currentUser = null;
+        let currentProfile = null;
+
+        /* ==========================================
+           21. DISPLAY NOTIFICATION MESSAGES
+           Shows a message in the selected notice area.
+           The type determines whether it is an error
+           or a success message.
+           ========================================== */
+        function notice(elementId, message, type = "error") {
+            const element = $(elementId);
+            element.textContent = message;
+            element.className = "notice show " + type;
+        }
+
+        /* Hides and clears the selected notification message. */
+        function clearNotice(elementId) {
+            $(elementId).textContent = "";
+            $(elementId).className = "notice";
+        }
+
+        /* ==========================================
+           22. FRIENDLY ERROR HANDLING
+           Converts Firebase error codes into messages
+           that residents can understand.
+           ========================================== */
+        function friendlyError(error) {
+            if (error.code === "permission-denied") return "Firestore blocked this update. Please check the resident profile security rules.";
+            if (error.code === "auth/wrong-password" || error.code === "auth/invalid-credential") return "Your current password is incorrect.";
+            if (error.code === "auth/weak-password") return "Choose a stronger new password.";
+            if (error.code === "auth/too-many-requests") return "Too many attempts. Please try again later.";
+            if (error.code === "auth/network-request-failed" || error.code === "unavailable") return "Network error. Check your internet connection.";
+            if (error.code === "auth/requires-recent-login") return "Please sign out and sign in again before changing your password.";
+            return "Unable to save your changes. Please try again.";
+        }
+
+        /* ==========================================
+           23. GET RESIDENT NAME
+           Reads the first and last name from the profile.
+           If those fields are unavailable, it checks older
+           name fields for compatibility with older records.
+           ========================================== */
+        function nameParts(data) {
+            const first = String(data.firstName || "").trim();
+            const last = String(data.lastName || "").trim();
+            if (first || last) return [first, last];
+            const legacy = String(data.name || data.fullName || "").trim();
+            const split = legacy.split(/\s+/);
+            return [split.shift() || "", split.join(" ")];
+        }
+
+        /* ==========================================
+           24. DISPLAY RESIDENT PROFILE
+           Places the resident's information into the
+           correct HTML fields after retrieving the data.
+           It also updates the avatar using the first
+           letter of the resident's name.
+           ========================================== */
+        function renderProfile() {
+            const [first, last] = nameParts(currentProfile);
+            const fullName = [first, last].filter(Boolean).join(" ") || "Resident";
+            $("firstName").value = first;
+            $("lastName").value = last;
+            $("contactNumber").value = currentProfile.contactNumber || "";
+            $("email").value = currentUser.email || currentProfile.email || "";
+            $("age").value = Number.isInteger(currentProfile.age) ? String(currentProfile.age) : "";
+            $("displayName").textContent = fullName;
+            $("displayEmail").textContent = currentUser.email || "";
+            $("userChip").textContent = fullName;
+            $("avatar").textContent = fullName.charAt(0).toUpperCase();
+        }
+
+        /* ==========================================
+           25. SAVE PERSONAL INFORMATION
+           Runs when the resident submits the profile form.
+           It checks the required fields, updates the resident's
+           Firestore document, and updates the displayed name.
+           ========================================== */
+        $("profileForm").addEventListener("submit", async event => {
+            event.preventDefault();
+            clearNotice("profileNotice");
+            if (!currentUser || !currentProfile) return;
+
+            // Get the updated values entered by the resident.
+            const firstName = $("firstName").value.trim();
+            const lastName = $("lastName").value.trim();
+            const contactNumber = $("contactNumber").value.trim();
+
+            // Check that the first name and last name are provided.
+            if (!firstName || !lastName) {
+                notice("profileNotice", "Please enter your first and last name.");
+                return;
+            }
+
+            // Temporarily disable the button while saving.
+            const button = $("saveProfileBtn");
+            button.disabled = true;
+            button.textContent = "Saving...";
+
+            try {
+                // Prepare the updated profile information.
+                const fullName = firstName + " " + lastName;
+                const changes = {
+                    firstName,
+                    lastName,
+                    name: fullName,
+                    contactNumber,
+                    updatedAt: serverTimestamp()
+                };
+
+                // Existing Firestore rules allow only these resident-editable fields.
+                // Older profiles may contain fullName, which is kept for compatibility.
+                await updateDoc(doc(db, "users", currentUser.uid), changes);
+
+                // Update the local profile data and refresh the displayed information.
+                currentProfile = { ...currentProfile, ...changes };
+                renderProfile();
+
+                // Also update the display name saved in Firebase Authentication.
+                try {
+                    await updateProfile(currentUser, { displayName: fullName });
+                    notice("profileNotice", "Your profile was saved successfully.", "success");
+                } catch (authError) {
+                    notice("profileNotice", "Your Firestore profile was saved, but the sign-in display name could not be updated. Please refresh later.", "success");
+                }
+            } catch (error) {
+                // Show an understandable message if the profile update fails.
+                console.error("Profile update error:", error);
+                notice("profileNotice", friendlyError(error));
+            } finally {
+                // Restore the button after the save operation finishes.
+                button.disabled = false;
+                button.textContent = "Save Changes";
+            }
+        });
+
+        /* ==========================================
+           26. CHANGE PASSWORD
+           Runs when the resident submits the password form.
+           It checks whether the new passwords match, verifies
+           the current password, and updates the Firebase password.
+           ========================================== */
+        $("passwordForm").addEventListener("submit", async event => {
+            event.preventDefault();
+            clearNotice("passwordNotice");
+            if (!currentUser || !currentUser.email) return;
+
+            // Get the current password and the new password entries.
+            const oldPassword = $("currentPassword").value;
+            const newPassword = $("newPassword").value;
+            const confirmPassword = $("confirmPassword").value;
+
+            // Check whether the new password and confirmation match.
+            if (newPassword !== confirmPassword) {
+                notice("passwordNotice", "New passwords do not match.");
+                return;
+            }
+
+            // Prevent the resident from using the same password again.
+            if (newPassword === oldPassword) {
+                notice("passwordNotice", "Please choose a different new password.");
+                return;
+            }
+
+            // Disable the button while Firebase processes the request.
+            const button = $("changePasswordBtn");
+            button.disabled = true;
+            button.textContent = "Updating...";
+
+            try {
+                // Create a credential using the resident's email and current password.
+                const credential = EmailAuthProvider.credential(currentUser.email, oldPassword);
+
+                // Confirm the resident's identity before allowing the password change.
+                await reauthenticateWithCredential(currentUser, credential);
+
+                // Save the new password through Firebase Authentication.
+                await updatePassword(currentUser, newPassword);
+
+                // Clear the password fields after a successful update.
+                $("passwordForm").reset();
+                notice("passwordNotice", "Your password has been changed successfully.", "success");
+            } catch (error) {
+                // Display an appropriate message if the password update fails.
+                console.error("Password update error:", error.code || error.message);
+                notice("passwordNotice", friendlyError(error));
+            } finally {
+                // Enable the button again after the process finishes.
+                button.disabled = false;
+                button.textContent = "Update Password";
+            }
+        });
+
+        /* ==========================================
+           27. RESIDENT SIGN OUT
+           Signs out the current resident from Firebase
+           Authentication and redirects to the login page.
+           ========================================== */
+        $("signoutBtn").addEventListener("click", async () => {
+            try {
+                await signOut(auth);
+                window.location.replace("../index.html");
+            } catch (error) {
+                alert("Unable to sign out. Please try again.");
+            }
+        });
+
+        /* ==========================================
+           28. CHECK RESIDENT AUTHENTICATION AND LOAD PROFILE
+           Checks whether someone is currently signed in.
+           It also verifies the resident's Firestore record,
+           role, and account status before showing the page.
+           ========================================== */
+        onAuthStateChanged(auth, async user => {
+
+            // Redirect users who do not have an active login session.
+            if (!user) {
+                window.location.replace("../index.html");
+                return;
+            }
+
+            try {
+                // Retrieve the logged-in resident's document from Firestore.
+                const snapshot = await getDoc(doc(db, "users", user.uid));
+
+                // Sign out if the user does not have a matching profile document.
+                if (!snapshot.exists()) {
+                    await signOut(auth);
+                    window.location.replace("../index.html");
+                    return;
+                }
+
+                // Read the resident's stored profile information.
+                const profile = snapshot.data();
+
+                // Allow access only to active accounts with the resident role.
+                if (String(profile.role || "").trim().toLowerCase() !== "resident" ||
+                    (profile.status && profile.status !== "active")) {
+                    await signOut(auth);
+                    window.location.replace("../index.html");
+                    return;
+                }
+
+                // Store the authenticated user and their profile information.
+                currentUser = user;
+                currentProfile = profile;
+
+                // Display the resident's information on the page.
+                renderProfile();
+
+                // Hide the loading message and show the profile forms.
+                $("loading").hidden = true;
+                $("profileContent").hidden = false;
+
+            } catch (error) {
+                // Display an error if the profile cannot be retrieved.
+                console.error("Profile load error:", error);
+                $("loading").textContent = "Unable to load your profile. Please check your connection and Firestore rules.";
+            }
+        });
+</script>
+
+<!-- Loads the separate JavaScript file responsible for desktop notifications. -->
+<script src="desktop-notifications.js" type="module"></script>
+
+<!-- ==========================================
+     29. PROGRESSIVE WEB APP SERVICE WORKER
+     Checks whether the browser supports service workers.
+     Registers sw.js after the page finishes loading.
+     This helps the application use its PWA features.
+     ========================================== -->
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    const serviceWorkerUrl = new URL("../sw.js", window.location.href);
+    navigator.serviceWorker.register(serviceWorkerUrl).catch((error) => {
+      console.error("PWA service worker registration failed:", error);
+    });
+  });
+}
+</script>
+
+</body>
+</html>
+       
