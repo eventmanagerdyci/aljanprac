@@ -1,0 +1,1477 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="#c8662d" name="theme-color"/>
+<title>Document Requests | Barangay Admin</title>
+
+<style>
+        /* =====================================================
+           GROUP 1: COLOR SETTINGS AND BASIC PAGE DESIGN
+
+           This group defines the colors used throughout the
+           system. It also sets the default font, background,
+           and basic appearance of buttons, links, and inputs.
+           ===================================================== */
+
+        :root {
+            --orange: #c8662d;
+            --orange-dark: #a74b1d;
+            --beige: #e9d1b3;
+            --cream: #fff9f0;
+            --ink: #342b26;
+            --muted: #81776f;
+            --line: #eee2d5;
+            --danger: #b33737;
+        }
+
+        * { box-sizing: border-box; }
+        body { margin: 0; background: #faf7f2; color: var(--ink); font-family: Arial, Helvetica, sans-serif; }
+        button, input, select, textarea { font: inherit; }
+        button { cursor: pointer; }
+        a { color: inherit; text-decoration: none; }
+        [hidden] { display: none !important; }
+
+
+        /* =====================================================
+           GROUP 2: SIDEBAR AND NAVIGATION DESIGN
+
+           This group controls the left-side navigation panel.
+           It contains the system name, menu links, and Sign Out
+           button. The active menu helps the administrator know
+           which page is currently open.
+           ===================================================== */
+
+        .sidebar {
+            width: 248px; position: fixed; inset: 0 auto 0 0; background: #fff;
+            border-right: 1px solid var(--line); display: flex; flex-direction: column;
+            z-index: 20;
+        }
+        .brand { display: flex; align-items: center; gap: 12px; padding: 26px 18px; border-bottom: 1px solid var(--line); }
+        .brand-icon { width: 42px; height: 42px; display: grid; place-items: center; background: var(--orange); color: white; font-weight: 800; border-radius: 9px; }
+        .brand-text strong { display: block; font-size: 14px; }
+        .brand-text small { display: block; color: var(--muted); font-size: 11px; margin-top: 5px; }
+        .menu-heading { padding: 26px 22px 12px; font-size: 10px; font-weight: 700; letter-spacing: 1.3px; color: #aa9d90; }
+        .menu { display: grid; gap: 5px; padding: 0 11px; }
+        .menu a { display: block; padding: 13px 15px; border-radius: 7px; font-size: 13px; color: #63564c; }
+        .menu a:hover { background: var(--cream); }
+        .menu a.active { background: #fff0df; color: var(--orange-dark); font-weight: 700; border-left: 3px solid var(--orange); }
+        .sidebar-bottom { margin-top: auto; padding: 18px; border-top: 1px solid var(--line); }
+        .signout { border: 1px solid var(--line); background: #fff; border-radius: 6px; width: 100%; padding: 12px; color: var(--danger); font-weight: 700; }
+
+
+        /* =====================================================
+           GROUP 3: MAIN CONTENT AND PAGE HEADER
+
+           This group controls the main area of the page.
+           It positions the content beside the sidebar and
+           styles the page title, administrator name, and
+           introductory text.
+           ===================================================== */
+
+        .main { margin-left: 248px; min-height: 100vh; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; gap: 15px; padding: 24px 32px; background: white; border-bottom: 1px solid var(--line); }
+        .topbar h1 { margin: 0 0 6px; font-size: 23px; font-weight: 700; }
+        .topbar p { margin: 0; font-size: 12px; color: var(--muted); }
+        .user-chip { border: 1px solid var(--line); background: var(--cream); padding: 11px 15px; border-radius: 30px; font-size: 12px; font-weight: 700; }
+        .content { max-width: 1350px; margin: auto; padding: 30px 32px; }
+        .heading { margin-bottom: 23px; }
+        .heading h2 { font-size: 21px; margin: 0 0 8px; }
+        .heading p { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.6; }
+
+
+        /* =====================================================
+           GROUP 4: NOTIFICATION AND REQUEST STATISTICS
+
+           The notice area displays messages such as loading
+           information or access errors.
+
+           The four statistic cards show the total number of
+           requests, requests under review, requests being
+           processed, and requests ready for pickup.
+           ===================================================== */
+
+        .notice { background: #fff5e8; border: 1px solid #eed7b9; padding: 13px 16px; border-radius: 8px; font-size: 12px; line-height: 1.6; margin-bottom: 18px; }
+        .notice.error { background: #fff0ee; border-color: #f0c9c3; color: var(--danger); }
+        .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 22px; }
+        .stat { background: #fff; border: 1px solid var(--line); border-radius: 9px; padding: 18px; }
+        .stat small { display: block; color: var(--muted); font-size: 12px; margin-bottom: 10px; }
+        .stat strong { font-size: 26px; color: var(--orange-dark); }
+
+
+        /* =====================================================
+           GROUP 5: DOCUMENT REQUESTS TABLE
+
+           This group styles the table where administrators
+           can view all submitted document requests.
+
+           It includes the search bar, status filter, table
+           headings, resident information, pickup schedule,
+           request status, and action buttons.
+           ===================================================== */
+
+        .panel { background: #fff; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+        .panel-head { padding: 18px 20px; border-bottom: 1px solid var(--line); display: flex; gap: 12px; justify-content: space-between; align-items: center; }
+        .panel-head h3 { margin: 0; font-size: 16px; }
+        .panel-head small { font-size: 11px; color: var(--muted); }
+        .toolbar { padding: 18px 20px; display: flex; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
+        .toolbar input, .toolbar select { min-height: 42px; border: 1px solid #e8dccc; border-radius: 6px; padding: 0 12px; background: #fffcf8; font-size: 12px; color: var(--ink); }
+        .toolbar input { flex: 1; min-width: 220px; }
+        .toolbar select { min-width: 170px; }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: #fffbf6; font-size: 11px; color: #87776b; font-weight: 700; padding: 15px; white-space: nowrap; }
+        td { padding: 16px 15px; font-size: 12px; border-top: 1px solid #f3ebe1; vertical-align: middle; }
+        td strong { display: block; font-size: 13px; margin-bottom: 5px; }
+        td small { color: var(--muted); font-size: 11px; }
+
+
+        /* =====================================================
+           GROUP 6: REQUEST STATUS LABELS AND BUTTONS
+
+           Different colors help the administrator recognize
+           the current status of each request.
+
+           For example, Processing, Ready for Pickup,
+           Completed, and Rejected have different colors.
+
+           This group also styles the action buttons and the
+           message shown when no requests are available.
+           ===================================================== */
+
+        .badge { display: inline-block; border-radius: 20px; padding: 7px 10px; background: #f7eee4; color: #865a35; font-size: 11px; font-weight: 700; white-space: nowrap; }
+        .badge.processing { background: #e9f0ff; color: #315b9b; }
+        .badge.ready { background: #e8f6e9; color: #2d783b; }
+        .badge.completed { background: #e6f3eb; color: #267046; }
+        .badge.rejected { background: #fff0ee; color: #ae3636; }
+        .btn { border: 0; border-radius: 6px; background: var(--orange); color: white; font-weight: 700; font-size: 12px; padding: 11px 15px; }
+        .btn:hover { background: var(--orange-dark); }
+        .btn:disabled { opacity: .55; cursor: not-allowed; }
+        .btn.outline { background: white; border: 1px solid #e2c8ae; color: var(--orange-dark); }
+        .btn.danger { background: #b33737; }
+        .empty { padding: 45px 15px; text-align: center; color: var(--muted); font-size: 13px; }
+        .bottom { padding: 13px 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+
+
+        /* =====================================================
+           GROUP 7: REQUEST DETAILS POP-UP DESIGN
+
+           This group controls the pop-up window that appears
+           when an administrator opens a document request.
+
+           The pop-up displays the selected request's details
+           and provides space for applicant information,
+           uploaded requirements, payment verification,
+           status updates, and request history.
+           ===================================================== */
+
+        .overlay { position: fixed; inset: 0; z-index: 50; background: #24191099; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .modal { width: min(850px, 100%); max-height: 94vh; overflow: auto; background: white; border-radius: 12px; box-shadow: 0 20px 70px #281a1a40; }
+        .modal-head { padding: 20px 24px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 12px; align-items: start; }
+        .modal-head h3 { margin: 0 0 5px; font-size: 19px; }
+        .modal-head p { margin: 0; font-size: 12px; color: var(--muted); }
+        .close { border: 0; background: #fff2e7; color: var(--orange-dark); padding: 9px 12px; border-radius: 6px; }
+        .modal-body { padding: 22px 24px; }
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .detail { padding: 12px 14px; background: #fffcf8; border: 1px solid #f0e7dd; border-radius: 7px; min-width: 0; }
+        .detail small { display: block; color: var(--muted); font-size: 11px; margin-bottom: 6px; }
+        .detail strong { display: block; font-size: 13px; overflow-wrap: anywhere; font-weight: 600; }
+        .section-title { font-size: 14px; margin: 25px 0 12px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+
+
+        /* =====================================================
+           GROUP 8: MODAL FORMS, HISTORY, AND FEEDBACK
+
+           These styles are used by the controls inside the
+           request details pop-up.
+
+           They make the status selection, note field,
+           request history, action buttons, and feedback
+           messages easier to read and use.
+           ===================================================== */
+
+        .actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 13px; }
+        .field { margin: 13px 0; }
+        .field label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 7px; }
+        .field select, .field textarea { width: 100%; padding: 12px; border: 1px solid #e9ddd0; background: #fffcf8; border-radius: 6px; color: var(--ink); font-size: 13px; }
+        .field textarea { min-height: 75px; resize: vertical; }
+        .muted { color: var(--muted); font-size: 12px; line-height: 1.6; }
+        .history { margin: 0; padding-left: 22px; }
+        .history li { padding: 6px 0; font-size: 12px; line-height: 1.6; }
+        .modal-footer { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--line); padding: 16px 24px; }
+        .feedback { font-size: 12px; padding: 11px 12px; margin-top: 10px; background: #fff4e6; border: 1px solid #ecd4b7; border-radius: 6px; line-height: 1.5; }
+        .feedback.error { color: var(--danger); background: #fff0ee; border-color: #f0c9c3; }
+
+
+        /* =====================================================
+           GROUP 9: RESPONSIVE DESIGN
+
+           This group adjusts the page when it is viewed on
+           smaller screens.
+
+           On medium screens, the sidebar becomes narrower
+           and the statistic cards use two columns.
+
+           On mobile screens, the sidebar and content become
+           more compact, and the request details use one
+           column so they are easier to view.
+           ===================================================== */
+
+        @media (max-width: 1000px) {
+            .sidebar { width: 210px; }
+            .main { margin-left: 210px; }
+            .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (max-width: 720px) {
+            .sidebar { width: auto; position: static; border-right: 0; }
+            .brand { padding: 15px; }
+            .menu-heading, .sidebar-bottom { display: none; }
+            .menu { display: flex; overflow-x: auto; padding: 8px 12px 13px; }
+            .menu a { white-space: nowrap; font-size: 12px; padding: 10px 12px; }
+            .main { margin-left: 0; }
+            .topbar { padding: 18px; }
+            .topbar h1 { font-size: 19px; }
+            .user-chip { display: none; }
+            .content { padding: 20px 14px; }
+            .detail-grid { grid-template-columns: 1fr; }
+            .modal-body, .modal-head, .modal-footer { padding: 16px; }
+        }
+
+
+        /* =====================================================
+           GROUP 10: SHARED SIDEBAR DESIGN
+
+           This group applies the common burnt-orange sidebar
+           design used by the other pages of the barangay
+           system.
+
+           It keeps the logo, navigation links, active page,
+           and Sign Out button consistent across the portal.
+           ===================================================== */
+
+        /* Shared sidebar design — matches the original Resident Dashboard. */
+        .sidebar {
+            position: fixed !important;
+            inset: 0 auto 0 0 !important;
+            width: 250px !important;
+            height: 100vh !important;
+            min-height: 0 !important;
+            padding: 0 !important;
+            gap: 0 !important;
+            background: #a74b1d !important;
+            color: #ffffff !important;
+            border: 0 !important;
+            border-right: 3px solid #e9d1b3 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            z-index: 30 !important;
+            border-radius: 0 !important;
+            overflow-y: auto;
+        }
+        .sidebar .brand {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            min-height: 90px !important;
+            padding: 18px !important;
+            margin: 0 !important;
+            border: 0 !important;
+            border-bottom: 1px solid #ffffff30 !important;
+            color: #ffffff !important;
+            background: transparent !important;
+            border-radius: 0 !important;
+            flex-shrink: 0;
+        }
+        .sidebar .brand-mark {
+            width: 47px !important;
+            height: 47px !important;
+            flex-shrink: 0;
+            border: 2px dashed #f4d5b5 !important;
+            border-radius: 9px !important;
+            background: transparent !important;
+            display: grid !important;
+            place-items: center !important;
+            font-size: 11px !important;
+            color: #ffffff !important;
+        }
+        .sidebar .brand-copy h2 {
+            margin: 0 0 5px !important;
+            font-size: 15px !important;
+            color: #ffffff !important;
+            font-weight: 700 !important;
+        }
+        .sidebar .brand-copy p {
+            margin: 0 !important;
+            color: #f7d8c3 !important;
+            font-size: 10px !important;
+            line-height: 1.5 !important;
+        }
+        .sidebar .menu-title {
+            color: #f5d5b1 !important;
+            font-size: 11px !important;
+            font-weight: bold !important;
+            letter-spacing: 1px !important;
+            padding: 27px 20px 12px !important;
+            margin: 0 !important;
+            background: transparent !important;
+        }
+        .sidebar .menu {
+            display: block !important;
+            padding: 0 12px !important;
+            margin: 0 !important;
+            background: transparent !important;
+            border: 0 !important;
+        }
+        .sidebar .menu a {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            min-height: 45px !important;
+            padding: 12px 14px !important;
+            margin: 0 0 5px !important;
+            color: #fff4e9 !important;
+            text-decoration: none !important;
+            border: 0 !important;
+            border-radius: 7px !important;
+            font-size: 13px !important;
+            font-weight: 400 !important;
+            line-height: 1.4 !important;
+            background: transparent !important;
+            text-align: left !important;
+        }
+        .sidebar .menu a:hover {
+            background: #ffffff1b !important;
+        }
+        .sidebar .menu a.active {
+            background: #ffffff !important;
+            color: #a74b1d !important;
+            font-weight: bold !important;
+            border-left: 4px solid #e9d1b3 !important;
+            padding-left: 10px !important;
+        }
+        .sidebar .menu-icon {
+            display: inline-block !important;
+            width: 20px !important;
+            min-width: 20px !important;
+            flex-shrink: 0 !important;
+            text-align: center !important;
+            font-size: 17px !important;
+            line-height: 1 !important;
+        }
+        .sidebar .menu-label { display: inline !important; }
+        .sidebar .sidebar-bottom {
+            margin-top: auto !important;
+            padding: 16px 12px !important;
+            border: 0 !important;
+            border-top: 1px solid #ffffff30 !important;
+            background: transparent !important;
+            border-radius: 0 !important;
+            display: block !important;
+        }
+        .sidebar .signout {
+            width: 100% !important;
+            min-height: 45px !important;
+            padding: 13px !important;
+            margin: 0 !important;
+            background: #ffffff18 !important;
+            border: 1px solid #ffffff40 !important;
+            border-radius: 7px !important;
+            color: #ffffff !important;
+            font-size: 13px !important;
+            text-align: center !important;
+            cursor: pointer;
+        }
+        .sidebar .signout:hover { background: #ffffff2c !important; }
+        .sidebar .mobile-menu { display: none !important; }
+        .sidebar .menu-label, .sidebar .brand-copy { visibility: visible !important; }
+        body:has(.sidebar) .main,
+        body:has(.sidebar) .shell > main,
+        body:has(.sidebar) .app > main {
+            margin-left: 250px !important;
+            min-width: 0 !important;
+        }
+        body:has(.sidebar) .shell, body:has(.sidebar) .app {
+            display: block !important;
+            min-height: 100vh !important;
+        }
+
+
+        /* =====================================================
+           GROUP 11: COMPACT SIDEBAR FOR SMALL SCREENS
+
+           When the screen becomes narrow, the sidebar changes
+           into a smaller icon-style navigation area.
+
+           This gives more space to the main page while keeping
+           the navigation accessible.
+           ===================================================== */
+
+        @media (max-width: 700px) {
+            .sidebar { width: 76px !important; }
+            .sidebar .brand {
+                justify-content: center !important;
+                padding: 8px !important;
+            }
+            .sidebar .brand-copy, .sidebar .menu-title, .sidebar .menu-label {
+                display: none !important;
+            }
+            .sidebar .menu { padding: 12px 8px !important; }
+            .sidebar .menu a {
+                justify-content: center !important;
+                padding: 13px 5px !important;
+                min-height: 45px !important;
+            }
+            .sidebar .menu a.active { padding-left: 1px !important; }
+            .sidebar .menu-icon { width: 20px !important; min-width: 20px !important; }
+            .sidebar .sidebar-bottom { padding: 12px 6px !important; }
+            .sidebar .signout { padding: 10px 2px !important; font-size: 10px !important; }
+            .sidebar .signout-label { display: none !important; }
+            body:has(.sidebar) .main,
+            body:has(.sidebar) .shell > main,
+            body:has(.sidebar) .app > main { margin-left: 76px !important; }
+        }
+
+    </style>
+
+<!-- These external stylesheets provide the shared appearance
+     and header design used by the other pages of the portal. -->
+<link href="../portal-theme.css?v=uniform-orange-20261107" rel="stylesheet"/>
+<link rel="stylesheet" href="../header-uniform.css?v=20261107-4">
+
+<style id="dark-orange-header-final">
+
+/* =====================================================
+   GROUP 12: UNIFIED HEADER DESIGN
+
+   This group makes the top header consistent with the
+   dark burnt-orange design used on the other portal pages.
+
+   It also adjusts the header spacing and text size when
+   the system is viewed on smaller screens.
+   ===================================================== */
+
+/* FINAL FIX: matched to the dark burnt-orange dashboard reference.
+   Every portal page includes this inline, so no missing external stylesheet can override it. */
+html body .unified-portal-header,
+html body header.unified-portal-header,
+html body div.unified-portal-header {
+  background:#a34a1d !important;
+  background-color:#a34a1d !important;
+  background-image:none !important;
+  color:#ffffff !important;
+  border:0 !important;
+  border-bottom:3px solid #e9d1b3 !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+  box-sizing:border-box !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  height:82px !important;
+  min-height:82px !important;
+  max-height:82px !important;
+  padding:17px 30px !important;
+  gap:16px !important;
+  width:100% !important;
+}
+html body .unified-portal-header h1 {
+  color:white !important; font:700 21px/1.25 Arial,Helvetica,sans-serif !important;
+  margin:0 0 3px !important; padding:0 !important;
+}
+html body .unified-portal-header p,
+html body .unified-portal-header .sub {
+  color:#fff0e4 !important; font:400 12px/1.3 Arial,Helvetica,sans-serif !important;
+  margin:0 !important; padding:0 !important;
+}
+html body .unified-portal-header .user-chip,
+html body .unified-portal-header .profile,
+html body .unified-portal-header .date,
+html body .unified-portal-header #adminName,
+html body .unified-portal-header #userName {
+  background:transparent !important; border:0 !important; color:#fff !important;
+  font:500 12px Arial,Helvetica,sans-serif !important;
+  text-align:right !important; box-shadow:none !important;
+}
+html body .app > main.main > .unified-portal-header {
+  margin:-30px -34px 26px !important; width:calc(100% + 68px) !important;
+}
+html body .shell > main > .unified-portal-header {
+  margin:-28px -28px 20px !important; width:calc(100% + 56px) !important;
+}
+@media(max-width:900px) {
+ html body .app > main.main > .unified-portal-header {
+   margin:-24px -20px 26px !important;width:calc(100% + 40px) !important;
+ }
+ html body .shell > main > .unified-portal-header {
+   margin:-18px -18px 20px !important;width:calc(100% + 36px) !important;
+ }
+}
+@media(max-width:700px) {
+ html body .unified-portal-header {padding:13px 16px !important}
+ html body .unified-portal-header h1 {font-size:18px !important}
+ html body .app > main.main > .unified-portal-header {
+   margin:-23px -15px 24px !important;width:calc(100% + 30px) !important;
+ }
+ html body .shell > main > .unified-portal-header {
+   margin:-14px -14px 20px !important;width:calc(100% + 28px) !important;
+ }
+}
+
+</style>
+
+<!-- This manifest connects the page to the Progressive Web App
+     settings, allowing the system to be installed like an app. -->
+<link rel="manifest" href="../manifest.webmanifest"/>
+</head>
+
+<body>
+
+<!-- =====================================================
+     GROUP 13: SIDEBAR HTML STRUCTURE
+
+     This is the visible navigation panel of the administrator.
+     The links allow the admin to move between the Dashboard,
+     Document Requests, Pickup Calendar, Residents, Messages,
+     and System Records pages.
+
+     The Document Requests link is marked active because
+     this is the page currently being viewed.
+     ===================================================== -->
+
+<aside class="sidebar">
+<div class="brand">
+<div class="brand-mark" id="logoSlot"><img alt="Barangay Document Request logo" src="../barangay-logo.png"/></div>
+<div class="brand-copy">
+<h2>Barangay Document Request</h2>
+<p>Admin Management Portal</p>
+</div>
+</div>
+<div class="menu-title">MAIN MENU</div>
+<nav aria-label="Admin navigation" class="menu"><a href="dashboard.html"><span class="menu-label">Dashboard</span></a><a aria-current="page" class="active" href="document-requests.html"><span class="menu-label">Document Requests</span></a><a href="pickup-calendar.html"><span class="menu-label">Pickup Calendar</span></a><a href="residents.html"><span class="menu-label">Residents</span></a><a href="messages.html"><span class="menu-label">Messages</span></a><a href="system-records.html"><span class="menu-label">System Records</span></a><div class="sidebar-bottom">
+<button class="signout" id="signoutBtn" type="button">Sign Out</button>
+</div></nav>
+
+</aside>
+
+
+<!-- =====================================================
+     GROUP 14: PAGE HEADER
+
+     This header displays the current page title,
+     the name of the system, and the administrator's name.
+
+     The administrator's name is filled in after the system
+     verifies the logged-in administrator's account.
+     ===================================================== -->
+
+<main class="main">
+<header class="topbar unified-portal-header" style="background-color:#a34a1d !important;background-image:none !important;color:#fff !important;">
+<div>
+<h1>Document Requests</h1>
+<p>Barangay Document Request and Management System</p>
+</div>
+<div class="user-chip" id="adminName">Administrator</div>
+</header>
+
+
+<!-- =====================================================
+     GROUP 15: REQUEST MANAGEMENT CONTENT
+
+     This is the main section of the Document Requests page.
+
+     It contains the page description, system notifications,
+     request statistics, and the complete list of submitted
+     document requests.
+     ===================================================== -->
+
+<section class="content">
+<div class="heading">
+<h2>Request Management</h2>
+<p>View resident information, preferred pickup dates, submitted requirements, payment status, and document progress.</p>
+</div>
+
+<!-- The notice displays messages about administrator access
+     and the loading of document request information. -->
+<div class="notice" id="notice" role="status">Checking administrator access...</div>
+
+
+<!-- =====================================================
+     GROUP 16: REQUEST STATISTICS
+
+     These four cards display the current number of requests
+     based on their status.
+
+     The numbers are automatically updated using the
+     information stored in the system.
+     ===================================================== -->
+
+<div class="stats">
+<div class="stat"><small>Total Requests</small><strong id="totalCount">—</strong></div>
+<div class="stat"><small>Under Review</small><strong id="reviewCount">—</strong></div>
+<div class="stat"><small>Processing</small><strong id="processingCount">—</strong></div>
+<div class="stat"><small>Ready for Pickup</small><strong id="readyCount">—</strong></div>
+</div>
+
+
+<!-- =====================================================
+     GROUP 17: ALL DOCUMENT REQUESTS TABLE
+
+     This section displays the requests submitted by residents.
+
+     The search field helps the administrator find a request
+     using the resident's name, document name, or tracking
+     number.
+
+     The status dropdown allows the administrator to display
+     requests with a selected status.
+
+     Each row contains the tracking number, document,
+     resident, pickup schedule, current status, and a Manage
+     button for opening the request details.
+     ===================================================== -->
+
+<section class="panel">
+<div class="panel-head">
+<h3>All Document Requests</h3>
+<small id="resultCount">0 requests</small>
+</div>
+
+<div class="toolbar">
+<input aria-label="Search requests" id="searchInput" placeholder="Search resident, document, or tracking number" type="search"/>
+<select aria-label="Filter by status" id="statusFilter">
+<option value="all">All Statuses</option>
+<option>Under Review</option>
+<option>Processing</option>
+<option>Ready for Pickup</option>
+<option>Completed</option>
+<option>Rejected</option>
+</select>
+</div>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Tracking / Document</th>
+<th>Resident</th>
+<th>Pickup Schedule</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="requestRows"><tr><td class="empty" colspan="5">Loading requests...</td></tr></tbody>
+</table>
+</div>
+
+<div class="bottom">Only authorized administrators should be permitted to read and update requests through Firestore rules.</div>
+</section>
+</section>
+</main>
+
+
+<!-- =====================================================
+     GROUP 18: REQUEST DETAILS AND MANAGEMENT POP-UP
+
+     This pop-up appears when the administrator clicks
+     the Manage button for a specific document request.
+
+     It displays the request information, applicant details,
+     uploaded requirements, and payment information.
+
+     It also allows authorized administrators to update the
+     request status, approve or reject payment, view the
+     request history, and contact the resident.
+     ===================================================== -->
+
+<div class="overlay" hidden="" id="overlay">
+<section aria-labelledby="modalTitle" aria-modal="true" class="modal" role="dialog">
+
+<!-- Pop-up title and Close button -->
+<div class="modal-head">
+<div>
+<h3 id="modalTitle">Manage Request</h3>
+<p id="modalSubtitle">Request information</p>
+</div>
+<button class="close" id="closeModal" type="button">Close</button>
+</div>
+
+<div class="modal-body">
+
+<!-- This area displays the main information about the request,
+     such as its tracking number, status, and pickup schedule. -->
+<div class="detail-grid" id="detailsGrid"></div>
+
+<!-- This area displays additional information provided
+     by the resident when submitting the application. -->
+<h4 class="section-title">Applicant Information</h4>
+<div class="detail-grid" id="applicantGrid"></div>
+
+<!-- This area provides access to the uploaded requirements.
+     The administrator can use it to check the submitted files. -->
+<h4 class="section-title">Uploaded Requirements</h4>
+<p class="muted" id="requirementsNote">Only open files using a private, authorized barangay upload service.</p>
+<div class="actions" id="requirementsActions"></div>
+
+<!-- This area displays the payment method, payment status,
+     and available payment receipt or verification actions. -->
+<h4 class="section-title">Payment Verification</h4>
+<div class="detail-grid" id="paymentGrid"></div>
+<div class="actions" id="paymentActions"></div>
+
+<!-- This section allows the administrator to change the
+     document request status and provide a note or reason.
+
+     A reason is required when the administrator rejects
+     a request. -->
+<h4 class="section-title">Update Request Progress</h4>
+<div class="field">
+<label for="newStatus">Document Status</label>
+<select id="newStatus">
+<option>Under Review</option>
+<option>Processing</option>
+<option>Ready for Pickup</option>
+<option>Completed</option>
+<option>Rejected</option>
+</select>
+</div>
+
+<div class="field">
+<label for="statusNote">Note / Reason (required for rejection)</label>
+<textarea id="statusNote" maxlength="500" placeholder="Optional note about this update"></textarea>
+</div>
+
+<div class="actions"><button class="btn" id="saveStatus" type="button">Save Status Update</button></div>
+
+<!-- This area displays confirmation messages or errors
+     after the administrator performs an action. -->
+<div class="feedback" hidden="" id="feedback" role="status"></div>
+
+<!-- This section shows the previous changes made to the
+     request, including the status, date, and any notes. -->
+<h4 class="section-title">Request History</h4>
+<ol class="history" id="historyList"></ol>
+</div>
+
+<!-- These buttons allow the administrator to contact
+     the resident or close the request details pop-up. -->
+<div class="modal-footer">
+<button class="btn outline" id="messageResident" type="button">Talk to Resident</button>
+<button class="btn outline" id="closeBottom" type="button">Close</button>
+</div>
+
+</section>
+</div>
+
+
+<!-- =====================================================
+     GROUP 19: FIREBASE CONNECTION AND REQUIRED SERVICES
+
+     This section connects the page to Firebase.
+
+     Firebase Authentication checks the administrator's
+     login, while Firestore stores and provides the document
+     request information.
+
+     The imported functions are used to read requests,
+     update their status, record payment changes, and
+     maintain the request history.
+     ===================================================== -->
+
+<script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+        import { getAuth, setPersistence, browserSessionPersistence, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+        import { getFirestore, collection, doc, getDoc, onSnapshot, runTransaction, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+
+        /* =====================================================
+           GROUP 20: FIREBASE CONFIGURATION AND INITIALIZATION
+
+           This configuration connects the page to the
+           Barangay Document Request Firebase project.
+
+           After connecting, the system initializes Firebase
+           Authentication and Firestore so the page can
+           verify users and access request records.
+           ===================================================== */
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBnWyjIXO1StOArcObzPH0UZjn6ICXfXCA",
+            authDomain: "barangay-doc-req.firebaseapp.com",
+            projectId: "barangay-doc-req",
+            storageBucket: "barangay-doc-req.firebasestorage.app",
+            messagingSenderId: "176118755540",
+            appId: "1:176118755540:web:45ee5bedf3f3f8c4510b41"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // The login session is kept within the current browser tab.
+        await setPersistence(auth, browserSessionPersistence);
+        const db = getFirestore(app);
+        const $ = id => document.getElementById(id);
+
+
+        /* =====================================================
+           GROUP 21: SYSTEM VARIABLES
+
+           These variables temporarily hold the information
+           needed while the administrator uses the page.
+
+           They include the logged-in administrator, loaded
+           requests, selected request, and current activity
+           state.
+           ===================================================== */
+
+        let currentAdmin = null;
+        let requests = [];
+        let selectedId = null;
+        let unsubscribe = null;
+        let busy = false;
+
+        const statusOrder = ["Under Review", "Processing", "Ready for Pickup", "Completed"];
+
+
+        /* =====================================================
+           GROUP 22: GENERAL DISPLAY AND DATE FUNCTIONS
+
+           These functions prepare information before it is
+           displayed on the page.
+
+           They create text elements, convert stored dates
+           into readable dates, and show notifications or
+           feedback messages to the administrator.
+           ===================================================== */
+
+        function textNode(tag, value, className) {
+            const element = document.createElement(tag);
+            element.textContent = String(value ?? "—");
+            if (className) element.className = className;
+            return element;
+        }
+
+        function asDate(value) {
+            if (!value) return null;
+            if (typeof value.toDate === "function") return value.toDate();
+            if (typeof value.seconds === "number") return new Date(value.seconds * 1000);
+            const result = new Date(value);
+            return Number.isNaN(result.getTime()) ? null : result;
+        }
+
+        function formattedDate(value) {
+            const date = asDate(value);
+            return date ? date.toLocaleString("en-PH", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Manila" }) : "Not recorded";
+        }
+
+        // Displays a general notice, such as loading information
+        // or an error when the system cannot access the records.
+        function showNotice(message, error = false) {
+            $("notice").hidden = false;
+            $("notice").textContent = message;
+            $("notice").className = error ? "notice error" : "notice";
+        }
+
+        // Displays feedback after an administrator performs an action.
+        function showFeedback(message, error = false) {
+            $("feedback").hidden = false;
+            $("feedback").textContent = message;
+            $("feedback").className = error ? "feedback error" : "feedback";
+        }
+
+        // Gives each request status its corresponding visual label.
+        function badge(status) {
+            const value = status || "Under Review";
+            const classes = {
+                "Processing": "processing",
+                "Ready for Pickup": "ready",
+                "Completed": "completed",
+                "Rejected": "rejected"
+            };
+            return textNode("span", value, "badge " + (classes[value] || ""));
+        }
+
+        // Adds a label and its corresponding information
+        // to the request details shown in the pop-up.
+        function addDetail(container, label, value) {
+            const box = textNode("div", "", "detail");
+            box.append(textNode("small", label), textNode("strong", value === undefined || value === null || value === "" ? "Not provided" : value));
+            container.append(box);
+        }
+
+
+        /* =====================================================
+           GROUP 23: UPLOADED FILE LINKS
+
+           These functions check whether a submitted file link
+           is a valid HTTPS address before displaying it.
+
+           If the link is valid, the administrator can open it
+           in a separate browser tab to review the file.
+           ===================================================== */
+
+        function safeExternalUrl(value) {
+            if (typeof value !== "string") return null;
+            try {
+                const url = new URL(value);
+                if (url.protocol !== "https:" || url.username || url.password) return null;
+                return url.href;
+            } catch {
+                return null;
+            }
+        }
+
+        function addExternalLink(container, label, urlValue) {
+            const url = safeExternalUrl(urlValue);
+            if (!url) return false;
+            const link = document.createElement("a");
+            link.href = url;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.className = "btn outline";
+            link.textContent = label;
+            container.append(link);
+            return true;
+        }
+
+
+        /* =====================================================
+           GROUP 24: SELECTING AND DISPLAYING REQUESTS
+
+           This group handles the request selected by the
+           administrator and displays the available records
+           in the main document requests table.
+
+           It also applies the search and status filters,
+           updates the statistics, and creates a Manage
+           button for each displayed request.
+           ===================================================== */
+
+        function currentRequest() {
+            return requests.find(item => item.id === selectedId);
+        }
+
+        function renderTable() {
+            const search = $("searchInput").value.trim().toLowerCase();
+            const filter = $("statusFilter").value;
+            const filtered = requests.filter(item => {
+                const status = item.status || "Under Review";
+                const matchesStatus = filter === "all" || status === filter;
+                const haystack = [item.id, item.trackingNumber, item.documentName, item.residentName, item.residentId].join(" ").toLowerCase();
+                return matchesStatus && haystack.includes(search);
+            }).sort((a, b) => (asDate(b.createdAt)?.getTime() || 0) - (asDate(a.createdAt)?.getTime() || 0));
+
+            // Updates the four statistic cards using the latest records.
+            $("totalCount").textContent = requests.length;
+            $("reviewCount").textContent = requests.filter(item => (item.status || "Under Review") === "Under Review").length;
+            $("processingCount").textContent = requests.filter(item => item.status === "Processing").length;
+            $("readyCount").textContent = requests.filter(item => item.status === "Ready for Pickup").length;
+            $("resultCount").textContent = `${filtered.length} request${filtered.length === 1 ? "" : "s"}`;
+
+            // Clears the old table rows before displaying the latest results.
+            const tbody = $("requestRows");
+            tbody.replaceChildren();
+
+            // Shows a message when no request matches the search or filter.
+            if (!filtered.length) {
+                const row = document.createElement("tr");
+                const cell = textNode("td", "No matching document requests.", "empty");
+                cell.colSpan = 5;
+                row.append(cell);
+                tbody.append(row);
+                return;
+            }
+
+            // Creates one table row for every matching request.
+            filtered.forEach(item => {
+                const row = document.createElement("tr");
+                const documentCell = document.createElement("td");
+                documentCell.append(textNode("strong", item.documentName || "Document Request"), textNode("small", item.trackingNumber || item.id));
+                const residentCell = document.createElement("td");
+                residentCell.append(textNode("strong", item.residentName || "Resident"), textNode("small", item.residentId || ""));
+                const pickupCell = textNode("td", [item.preferredPickupDate || item.pickupDate || "Not set", item.preferredPickupTime || item.pickupTime || ""].join(" "));
+                const statusCell = document.createElement("td");
+                statusCell.append(badge(item.status));
+                const actionCell = document.createElement("td");
+
+                // The Manage button opens the details of the selected request.
+                const manage = textNode("button", "Manage", "btn");
+                manage.type = "button";
+                manage.addEventListener("click", () => openRequest(item.id));
+
+                row.append(documentCell, residentCell, pickupCell, statusCell, actionCell);
+                actionCell.append(manage);
+                tbody.append(row);
+            });
+        }
+
+
+        /* =====================================================
+           GROUP 25: REQUEST HISTORY
+
+           This function displays the previous updates made
+           to a document request.
+
+           It shows the status or action, the date and time
+           of the update, and any note recorded by the
+           administrator.
+
+           If there are no previous updates, the system
+           displays a message instead.
+           ===================================================== */
+
+        function renderHistory(item) {
+            const history = $("historyList");
+            history.replaceChildren();
+            const entries = Array.isArray(item.statusHistory) ? item.statusHistory : (Array.isArray(item.history) ? item.history : []);
+            if (!entries.length) {
+                history.append(textNode("li", "No recorded status changes yet. Current status: " + (item.status || "Under Review")));
+                return;
+            }
+            entries.forEach(entry => {
+                const label = entry.status || entry.action || "Update";
+                const when = formattedDate(entry.at || entry.timestamp || entry.date);
+                const note = entry.note ? ` — ${entry.note}` : "";
+                history.append(textNode("li", `${label} · ${when}${note}`));
+            });
+        }
+
+
+        /* =====================================================
+           GROUP 26: DISPLAYING THE COMPLETE REQUEST DETAILS
+
+           This function fills the pop-up with information
+           from the request selected by the administrator.
+
+           It displays the resident's information, applicant
+           details, uploaded requirements, payment information,
+           available payment actions, and request history.
+
+           It also prepares the status selection and note field
+           for the administrator.
+           ===================================================== */
+
+        function renderModal() {
+            const item = currentRequest();
+            if (!item) { closeModal(); return; }
+
+            // Displays the document name and tracking number.
+            $("modalTitle").textContent = item.documentName || "Manage Document Request";
+            $("modalSubtitle").textContent = `Tracking: ${item.trackingNumber || item.id}`;
+
+            // Displays the basic request information.
+            $("detailsGrid").replaceChildren();
+            addDetail($("detailsGrid"), "Resident", item.residentName || "Resident");
+            addDetail($("detailsGrid"), "Current Status", item.status || "Under Review");
+            addDetail($("detailsGrid"), "Requested On", formattedDate(item.createdAt));
+            addDetail($("detailsGrid"), "Preferred Pickup Date", item.preferredPickupDate || item.pickupDate);
+            addDetail($("detailsGrid"), "Preferred Pickup Time", item.preferredPickupTime || item.pickupTime);
+            addDetail($("detailsGrid"), "Resident UID", item.residentId);
+
+            // Displays the additional information submitted by the applicant.
+            $("applicantGrid").replaceChildren();
+            const details = item.applicantDetails && typeof item.applicantDetails === "object" ? item.applicantDetails : {};
+            const fields = Object.entries(details).filter(([, value]) => typeof value !== "object");
+            if (!fields.length) addDetail($("applicantGrid"), "Applicant Details", "No additional information recorded");
+            fields.forEach(([key, value]) => addDetail($("applicantGrid"), key, value));
+
+            // Provides access to the barangay's uploaded requirements folder.
+            $("requirementsActions").replaceChildren();
+            const requirementsLinked = addExternalLink($("requirementsActions"), "Open Uploaded Requirements (Google Drive)", "https://drive.google.com/drive/folders/1kV6a8nGmNBGlxC05R-FOd-6f9uQqvoES_LjprCLkc7dcoRSG5W5TZjjGugbFq8CANVP7I5xq");
+            $("requirementsNote").textContent = requirementsLinked
+                ? "Open the authorized residents’ requirements folder and match the uploaded files with the applicant and request tracking number."
+                : "No individual upload link is stored with this request. Match the request ID with submissions in the barangay's authorized external form dashboard.";
+
+            // Displays the resident's payment method, payment status, and fee.
+            $("paymentGrid").replaceChildren();
+            addDetail($("paymentGrid"), "Payment Method", item.paymentMethod || "Not Recorded");
+            addDetail($("paymentGrid"), "Payment Status", item.paymentStatus || "Not Recorded");
+            addDetail($("paymentGrid"), "Fee", typeof item.fee === "number" ? `₱${item.fee.toFixed(2)}` : "Not configured");
+
+            // Adds the available payment receipt and verification links.
+            $("paymentActions").replaceChildren();
+            const hasReceipt = addExternalLink($("paymentActions"), "View Payment Receipt", item.paymentReceiptUrl || item.receiptUrl);
+            if (true) {
+                addExternalLink($("paymentActions"), "Open Receipt Submission Form (Admin Review)", "https://drive.google.com/drive/folders/1Pb017KNwN60g4sarklLYKl-et32PAEvGCuXpahSV3duVH1srjKUn6tnFbdQCQ-qB_EBRVq1_");
+            }
+
+            // Shows a reminder when the resident has submitted a GCash receipt.
+            if (item.paymentMethod === "GCash" && item.paymentReceiptSubmitted) {
+                $("paymentActions").append(textNode("p", "Resident confirmed submitting a receipt through Google Forms. Match it with the resident and tracking number before approving.", "muted"));
+            }
+
+            // Provides payment approval and rejection buttons when applicable.
+            const needsPayment = item.paymentMethod === "GCash" || item.paymentMethod === "Cash on Pickup";
+            if (needsPayment && item.paymentStatus !== "Approved") {
+                const approve = textNode("button", "Approve Payment", "btn");
+                approve.type = "button";
+                approve.disabled = item.paymentMethod === "GCash" && !item.paymentReceiptSubmitted && !hasReceipt;
+                approve.title = approve.disabled ? "Resident has not confirmed submitting a GCash receipt." : "Verify the receipt in the Google Form before approving";
+                approve.addEventListener("click", () => updatePayment("Approved"));
+
+                const reject = textNode("button", "Reject Payment", "btn danger");
+                reject.type = "button";
+                reject.addEventListener("click", () => updatePayment("Rejected"));
+                $("paymentActions").append(approve, reject);
+            }
+
+            // Reminds the administrator to manually check GCash receipts
+            // when no individual receipt link is stored in the request.
+            if (item.paymentMethod === "GCash" && !hasReceipt) {
+                $("paymentActions").append(textNode("p", "Google Forms does not automatically send receipt files to Firestore. Open the form responses separately and verify the receipt manually before approval.", "muted"));
+            }
+
+            // Loads the current request status into the status dropdown.
+            $("newStatus").value = item.status || "Under Review";
+            $("statusNote").value = "";
+            $("feedback").hidden = true;
+
+            // Displays the previous status changes for this request.
+            renderHistory(item);
+        }
+
+
+        /* =====================================================
+           GROUP 27: OPENING AND CLOSING THE REQUEST POP-UP
+
+           When the administrator clicks Manage, the system
+           identifies the selected request and opens its
+           details pop-up.
+
+           The pop-up can be closed using the Close buttons,
+           by clicking outside the pop-up, or by pressing
+           the Escape key.
+           ===================================================== */
+
+        function openRequest(id) {
+            if (!currentAdmin) return;
+            selectedId = id;
+            renderModal();
+            $("overlay").hidden = false;
+            $("closeModal").focus();
+        }
+
+        function closeModal() {
+            $("overlay").hidden = true;
+            selectedId = null;
+        }
+
+
+        /* =====================================================
+           GROUP 28: PREVENTING MULTIPLE ACTIONS AT ONCE
+
+           This function temporarily disables the update
+           buttons while the system is saving information.
+
+           It helps prevent the administrator from submitting
+           the same action multiple times.
+           ===================================================== */
+
+        function setBusy(value) {
+            busy = value;
+            $("saveStatus").disabled = value;
+            $("paymentActions").querySelectorAll("button").forEach(button => button.disabled = value);
+        }
+
+
+        /* =====================================================
+           GROUP 29: PAYMENT VERIFICATION AND UPDATE
+
+           This function handles the administrator's payment
+           approval or rejection.
+
+           Before approving a payment, the system asks the
+           administrator to confirm that the payment details
+           or receipt have been checked.
+
+           After confirmation, the payment status and payment
+           history are saved in Firestore.
+           ===================================================== */
+
+        async function updatePayment(nextStatus) {
+            const item = currentRequest();
+            if (!item || !currentAdmin || busy) return;
+
+            // Prevents GCash approval when no receipt submission
+            // has been confirmed and no receipt link is available.
+            if (item.paymentMethod === "GCash" && nextStatus === "Approved" && !item.paymentReceiptSubmitted && !safeExternalUrl(item.paymentReceiptUrl || item.receiptUrl)) {
+                showFeedback("Resident has not confirmed uploading a GCash receipt.", true);
+                return;
+            }
+
+            // Asks the administrator to confirm the payment decision.
+            if (!window.confirm(nextStatus === "Approved"
+                ? `Have you personally checked the ${item.paymentMethod === "GCash" ? "Google Form receipt and matching transaction" : "cash payment"} for this request? Confirm approval only after verification.`
+                : `Confirm payment status: ${nextStatus}?`)) return;
+
+            setBusy(true);
+            try {
+                const requestRef = doc(db, "requests", item.id);
+
+                // Saves the payment update and records who performed it.
+                await runTransaction(db, async transaction => {
+                    const snapshot = await transaction.get(requestRef);
+                    if (!snapshot.exists()) throw new Error("Request no longer exists.");
+                    const data = snapshot.data();
+                    const history = Array.isArray(data.history) ? data.history : [];
+                    const event = { action: `Payment ${nextStatus}`, note: `Payment method: ${data.paymentMethod || "Unknown"}`, at: Timestamp.now(), by: currentAdmin.uid };
+
+                    transaction.update(requestRef, {
+                        paymentStatus: nextStatus,
+                        paymentUpdatedAt: serverTimestamp(),
+                        paymentApprovedAt: nextStatus === "Approved" ? serverTimestamp() : null,
+                        updatedAt: serverTimestamp(),
+                        history: [...history, event]
+                    });
+                });
+
+                // Displays a confirmation after the payment update is saved.
+                showFeedback(`Payment marked ${nextStatus}.`);
+            } catch (error) {
+                console.error("Payment update failed:", error);
+                showFeedback("Payment update failed. Check administrator write permissions in Firestore rules.", true);
+            } finally { setBusy(false); }
+        }
+
+
+        /* =====================================================
+           GROUP 30: DOCUMENT REQUEST STATUS UPDATE
+
+           This function handles changes to the document
+           request status.
+
+           The administrator can move a request through its
+           stages: Under Review, Processing, Ready for Pickup,
+           and Completed.
+
+           The system checks that the request follows the
+           correct order. A reason is required when rejecting
+           a request, and payment must be approved before a
+           paid request can be marked as Completed.
+
+           Once confirmed, the new status and its history
+           are saved in Firestore.
+           ===================================================== */
+
+        async function updateStatus() {
+            const item = currentRequest();
+            if (!item || !currentAdmin || busy) return;
+            const nextStatus = $("newStatus").value;
+            const note = $("statusNote").value.trim();
+
+            // Requires a reason when the administrator rejects a request.
+            if (nextStatus === "Rejected" && !note) { showFeedback("Please enter a reason before rejecting a request.", true); return; }
+
+            // Prevents saving the same status again.
+            if (nextStatus === (item.status || "Under Review")) { showFeedback("Select a different status to record an update.", true); return; }
+
+            // Prevents closed requests from being changed through this page.
+            if (item.status === "Completed" || item.status === "Rejected") { showFeedback("This request is closed. Reopening requires a separate authorized process.", true); return; }
+
+            // Checks whether the request is moving to the next allowed stage.
+            const currentIndex = statusOrder.indexOf(item.status || "Under Review");
+            const nextIndex = statusOrder.indexOf(nextStatus);
+            if (nextStatus !== "Rejected" && nextIndex !== currentIndex + 1) {
+                showFeedback("Move requests forward one stage at a time, or reject with a reason.", true);
+                return;
+            }
+
+            // Requires payment approval before completing a paid request.
+            if (nextStatus === "Completed" && (item.paymentMethod === "GCash" || item.paymentMethod === "Cash on Pickup") && item.paymentStatus !== "Approved") {
+                showFeedback("Required payment must be approved before completing the request.", true);
+                return;
+            }
+
+            // Asks the administrator to confirm the selected status update.
+            if (!window.confirm(`Update request to ${nextStatus}?`)) return;
+
+            setBusy(true);
+            try {
+                const requestRef = doc(db, "requests", item.id);
+
+                // Checks the latest request record before saving the update.
+                await runTransaction(db, async transaction => {
+                    const snapshot = await transaction.get(requestRef);
+                    if (!snapshot.exists()) throw new Error("Request no longer exists.");
+                    const data = snapshot.data();
+
+                    // Prevents overwriting a newer update made by another admin.
+                    if ((data.status || "Under Review") !== (item.status || "Under Review")) throw new Error("Request changed. Please review the latest status.");
+
+                    const history = Array.isArray(data.statusHistory) ? data.statusHistory : [];
+                    const entry = { status: nextStatus, note, at: Timestamp.now(), by: currentAdmin.uid };
+
+                    // Saves the new status, update date, and status history.
+                    transaction.update(requestRef, {
+                        status: nextStatus,
+                        statusHistory: [...history, entry],
+                        statusUpdatedAt: serverTimestamp(),
+                        updatedAt: serverTimestamp()
+                    });
+                });
+
+                // Displays a confirmation after the status is saved.
+                showFeedback(`Request updated to ${nextStatus}.`);
+            } catch (error) {
+                console.error("Status update failed:", error);
+                showFeedback("Unable to update status. Check Firestore permissions and refresh if another administrator changed the request.", true);
+            } finally { setBusy(false); }
+        }
+
+
+        /* =====================================================
+           GROUP 31: BUTTONS, SEARCH, AND POP-UP EVENTS
+
+           This group connects the page controls to their
+           corresponding functions.
+
+           It handles searching, filtering, saving status
+           updates, closing the pop-up, and opening the
+           resident's message page.
+           ===================================================== */
+
+        // Updates the request table whenever the search text changes.
+        $("searchInput").addEventListener("input", renderTable);
+
+        // Updates the request table whenever a status is selected.
+        $("statusFilter").addEventListener("change", renderTable);
+
+        // Saves the selected document request status.
+        $("saveStatus").addEventListener("click", updateStatus);
+
+        // Closes the request details pop-up using either Close button.
+        $("closeModal").addEventListener("click", closeModal);
+        $("closeBottom").addEventListener("click", closeModal);
+
+        // Closes the pop-up when the administrator clicks outside it.
+        $("overlay").addEventListener("click", event => { if (event.target === $("overlay")) closeModal(); });
+
+        // Allows the administrator to close the pop-up using Escape.
+        document.addEventListener("keydown", event => { if (event.key === "Escape" && !$("overlay").hidden) closeModal(); });
+
+        // Opens the Messages page for the resident connected to the request.
+        $("messageResident").addEventListener("click", () => {
+            const item = currentRequest();
+            if (!item?.residentId) { showFeedback("No resident ID is available for this request.", true); return; }
+            window.location.href = "messages.html?residentId=" + encodeURIComponent(item.residentId);
+        });
+
+
+        /* =====================================================
+           GROUP 32: ADMINISTRATOR SIGN OUT
+
+           When the administrator clicks Sign Out, the system
+           stops listening for request updates, ends the
+           Firebase login session, and returns to the login
+           page.
+           ===================================================== */
+
+        $("signoutBtn").addEventListener("click", async () => {
+            if (unsubscribe) unsubscribe();
+            await signOut(auth);
+            window.location.replace("../index.html");
+        });
+
+
+        /* =====================================================
+           GROUP 33: ADMINISTRATOR AUTHENTICATION AND ACCESS
+
+           This is where the system checks who is currently
+           logged in.
+
+           It verifies the user's profile in Firestore and
+           checks whether the account has an administrator
+           role and an active status.
+
+           If the account is not authorized, access is denied
+           and the user is returned to the login page.
+           ===================================================== */
+
+        onAuthStateChanged(auth, async user => {
+            if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+            currentAdmin = null;
+
+            // Returns to the login page if nobody is signed in.
+            if (!user) { window.location.replace("../index.html"); return; }
+
+            try {
+                // Retrieves the logged-in user's profile from Firestore.
+                const profileSnapshot = await getDoc(doc(db, "users", user.uid));
+                const profile = profileSnapshot.exists() ? profileSnapshot.data() : null;
+
+                // Allows access only to an active administrator account.
+                if (!profile || String(profile.role || "").trim().toLowerCase() !== "admin" || (profile.status && profile.status !== "active")) {
+                    showNotice("Access denied. This page is for authorized administrators only.", true);
+                    await signOut(auth);
+                    window.location.replace("../index.html");
+                    return;
+                }
+
+                // Stores the verified administrator and displays their name.
+                currentAdmin = user;
+                $("adminName").textContent = profile.name || profile.fullName || "Administrator";
+                showNotice("Loading document requests...");
+
+
+                /* =================================================
+                   GROUP 34: REAL-TIME DOCUMENT REQUESTS
+
+                   After the administrator is verified, the system
+                   listens to the requests collection in Firestore.
+
+                   When a request is added, changed, or updated,
+                   the table and statistics are refreshed automatically.
+
+                   If a request is currently open, its details are
+                   also refreshed with the latest information.
+                   ================================================= */
+
+                unsubscribe = onSnapshot(collection(db, "requests"), snapshot => {
+                    requests = snapshot.docs.map(record => ({ id: record.id, ...record.data() }));
+                    $("notice").hidden = true;
+                    renderTable();
+
+                    // Refreshes the open request details when new data arrives.
+                    if (selectedId && !$("overlay").hidden) renderModal();
+
+                }, error => {
+                    console.error("Unable to read requests:", error);
+                    showNotice("Cannot load requests. Configure admin access to the requests collection in Firestore rules.", true);
+                    $("requestRows").replaceChildren();
+                });
+
+            } catch (error) {
+                console.error("Admin authentication check failed:", error);
+                showNotice("Unable to verify administrator access. Check Firebase configuration and Firestore rules.", true);
+            }
+        });
+    </script>
+
+
+<!-- =====================================================
+     GROUP 35: PROGRESSIVE WEB APP SERVICE WORKER
+
+     This section registers the service worker of the system.
+
+     The service worker supports the Progressive Web App
+     features of the project, such as handling cached
+     resources and helping the application work like an
+     installable web app.
+
+     Registration happens after the page finishes loading.
+     ===================================================== -->
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    const serviceWorkerUrl = new URL("../sw.js", window.location.href);
+    navigator.serviceWorker.register(serviceWorkerUrl).catch((error) => {
+      console.error("PWA service worker registration failed:", error);
+    });
+  });
+}
+</script>
+
+</body>
+</html>
